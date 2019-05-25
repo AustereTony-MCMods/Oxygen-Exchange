@@ -1,0 +1,18 @@
+oxygen_exchange.gui.interaction.offerExchange=Offer Exchange
+
+oxygen_exchange.request.exchange=%s offers you exchange.
+
+oxygen_exchange.gui.exchange.title=Exchange
+oxygen_exchange.gui.exchange.yourOffer=Your Offer
+oxygen_exchange.gui.exchange.playerOffer=%s Offer
+oxygen_exchange.gui.exchange.offerButton=Offer
+oxygen_exchange.gui.exchange.confirmCallback=Confirm Exchange
+oxygen_exchange.gui.exchange.confirmCallback.request=Are you sure?
+
+oxygen_exchange.gui.exchange.confirmed=Exchange confirmed
+oxygen_exchange.gui.exchange.notConfirmed=Exchange not confirmed
+
+oxygen_exchange.message.request.acceptedSender=Your exchange request accepted.
+oxygen_exchange.message.request.acceptedTarget=You accepted exchange request.
+oxygen_exchange.message.request.rejectedSender=Your exchange request rejected.
+oxygen_exchange.message.request.rejectedTarget=You rejected exchange request.

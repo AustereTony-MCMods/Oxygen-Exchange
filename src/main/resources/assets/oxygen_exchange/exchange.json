@@ -1,0 +1,5 @@
+{
+  "main": {
+    "exchange_request_expire_time_seconds": 20
+  }
+}
