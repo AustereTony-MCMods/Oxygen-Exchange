@@ -1,8 +1,8 @@
 package austeretony.oxygen_exchange.common.network.client;
 
 import austeretony.oxygen.common.network.ProxyPacket;
+import austeretony.oxygen.util.PacketBufferUtils;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
-import austeretony.oxygen_exchange.common.main.ExchangeProcess;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
@@ -24,7 +24,7 @@ public class CPSyncOtherPlayerOffer extends ProxyPacket {
     public void write(PacketBuffer buffer, INetHandler netHandler) {
         buffer.writeInt(this.offeredCurrency);
         for (ItemStack itemStack : this.offeredItems)
-            ExchangeProcess.writeItemStack(itemStack, buffer);
+            PacketBufferUtils.writeItemStack(itemStack, buffer);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class CPSyncOtherPlayerOffer extends ProxyPacket {
         this.offeredCurrency = buffer.readInt();
         this.offeredItems = new ItemStack[5];
         for (int i = 0; i < 5; i++)
-            this.offeredItems[i] = ExchangeProcess.readItemStack(buffer);
+            this.offeredItems[i] = PacketBufferUtils.readItemStack(buffer);
         ExchangeManagerClient.instance().setOtherPlayerOffer(this.offeredCurrency, this.offeredItems);
     }
 }

@@ -9,15 +9,15 @@ import austeretony.alternateui.screen.core.GUIBaseElement;
 import austeretony.alternateui.screen.image.GUIImageLabel;
 import austeretony.alternateui.screen.text.GUITextField;
 import austeretony.alternateui.screen.text.GUITextLabel;
-import austeretony.oxygen.client.api.StatWatcherHelperClient;
+import austeretony.oxygen.client.api.WatcherHelperClient;
+import austeretony.oxygen.client.core.api.ClientReference;
 import austeretony.oxygen.client.gui.OxygenGUITextures;
 import austeretony.oxygen.client.gui.settings.GUISettings;
 import austeretony.oxygen.common.config.OxygenConfig;
-import austeretony.oxygen.common.main.OxygenMain;
+import austeretony.oxygen.common.main.OxygenPlayerData;
 import austeretony.oxygen.common.main.OxygenSoundEffects;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
 import austeretony.oxygen_exchange.client.gui.exchange.callback.ConfirmExchangeGUICallback;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 
 public class ExchangeMenuGUISection extends AbstractGUISection {
@@ -37,8 +37,8 @@ public class ExchangeMenuGUISection extends AbstractGUISection {
     private AbstractGUICallback confirmCallback;
 
     public static final String 
-    EXCHANGE_CONFIRMED = I18n.format("oxygen_exchange.gui.exchange.confirmed"),
-    EXCHANGE_NOT_CONFIRMED = I18n.format("oxygen_exchange.gui.exchange.notConfirmed");
+    EXCHANGE_CONFIRMED = ClientReference.localize("oxygen_exchange.gui.exchange.confirmed"),
+    EXCHANGE_NOT_CONFIRMED = ClientReference.localize("oxygen_exchange.gui.exchange.notConfirmed");
 
     public ExchangeMenuGUISection(ExchangeMenuGUIContainer screen) {
         super(screen);
@@ -48,20 +48,20 @@ public class ExchangeMenuGUISection extends AbstractGUISection {
     @Override
     public void init() {
         this.addElement(new ExchangeMenuBackgroundGUIFiller(0, 0, this.getWidth(), this.getHeight()));
-        this.addElement(new GUITextLabel(2, 4).setDisplayText(I18n.format("oxygen_exchange.gui.exchange.title"), false, GUISettings.instance().getTitleScale()));
+        this.addElement(new GUITextLabel(2, 4).setDisplayText(ClientReference.localize("oxygen_exchange.gui.exchange.title"), false, GUISettings.instance().getTitleScale()));
 
-        this.addElement(new GUITextLabel(2, 15).setDisplayText(I18n.format("oxygen_exchange.gui.exchange.yourOffer"), false, GUISettings.instance().getTextScale()));
-        this.addElement(new GUITextLabel(99, 15).setDisplayText(I18n.format("oxygen_exchange.gui.exchange.playerOffer", ExchangeManagerClient.instance().getRequestedUsername()), false, GUISettings.instance().getTextScale()));
+        this.addElement(new GUITextLabel(2, 15).setDisplayText(ClientReference.localize("oxygen_exchange.gui.exchange.yourOffer"), false, GUISettings.instance().getTextScale()));
+        this.addElement(new GUITextLabel(99, 15).setDisplayText(ClientReference.localize("oxygen_exchange.gui.exchange.playerOffer", ExchangeManagerClient.instance().getRequestedUsername()), false, GUISettings.instance().getTextScale()));
 
         if (OxygenConfig.ENABLE_CURRENCY.getBooleanValue()) {
-            this.addElement(this.currencyField = new GUITextField(10, 46, 40, 10).setScale(0.7F).setText("0").enableNumberFieldMode(StatWatcherHelperClient.getInt(OxygenMain.CURRENCY_GOLD_STAT_ID)).cancelDraggedElementLogic());
+            this.addElement(this.currencyField = new GUITextField(10, 46, 40, 10).setScale(0.7F).setText("0").enableNumberFieldMode(WatcherHelperClient.getInt(OxygenPlayerData.CURRENCY_GOLD_ID)).cancelDraggedElementLogic());
             this.addElement(this.coinIconFirst = new GUIImageLabel(2, 46, 6, 6).setTexture(OxygenGUITextures.GOLD_COIN_ICON, 6, 6));
 
             this.addElement(this.otherCurrencyOfferTextLabel = new GUITextLabel(107, 46).setDisplayText("0", false, GUISettings.instance().getTextScale()));
             this.addElement(this.coinIconSecond = new GUIImageLabel(99, 46, 6, 6).setTexture(OxygenGUITextures.GOLD_COIN_ICON, 6, 6));
 
             this.addElement(this.clientCurrencyAmountTextLabel = new GUITextLabel(0, 67).setTextScale(GUISettings.instance().getSubTextScale()));
-            this.addElement(this.coinIconThird = new GUIImageLabel(0, 68, 6, 6).setTexture(OxygenGUITextures.GOLD_COIN_ICON, 6, 6).initSimpleTooltip(I18n.format("oxygen.currency.gold"), GUISettings.instance().getTooltipScale()));
+            this.addElement(this.coinIconThird = new GUIImageLabel(0, 68, 6, 6).setTexture(OxygenGUITextures.GOLD_COIN_ICON, 6, 6).initSimpleTooltip(ClientReference.localize("oxygen.currency.gold"), GUISettings.instance().getTooltipScale()));
             this.updateCurrencyAmount();
         }
 
@@ -70,15 +70,15 @@ public class ExchangeMenuGUISection extends AbstractGUISection {
 
         this.addElement(this.offerButton = new GUIButton(4, 66, 40, 10).setSound(OxygenSoundEffects.BUTTON_CLICK.soundEvent)
                 .enableDynamicBackground(GUISettings.instance().getEnabledButtonColor(), GUISettings.instance().getDisabledButtonColor(), GUISettings.instance().getHoveredButtonColor())
-                .setDisplayText(I18n.format("oxygen_exchange.gui.exchange.offerButton"), true, GUISettings.instance().getButtonTextScale()));  
+                .setDisplayText(ClientReference.localize("oxygen_exchange.gui.exchange.offerButton"), true, GUISettings.instance().getButtonTextScale()));  
 
         this.addElement(this.cancelButton = new GUIButton(48, 66, 40, 10).setSound(OxygenSoundEffects.BUTTON_CLICK.soundEvent)
                 .enableDynamicBackground(GUISettings.instance().getEnabledButtonColor(), GUISettings.instance().getDisabledButtonColor(), GUISettings.instance().getHoveredButtonColor())
-                .setDisplayText(I18n.format("oxygen.gui.cancelButton"), true, GUISettings.instance().getButtonTextScale()));  
+                .setDisplayText(ClientReference.localize("oxygen.gui.cancelButton"), true, GUISettings.instance().getButtonTextScale()));  
 
         this.addElement(this.confirmButton = new GUIButton(99, 66, 40, 10).setSound(OxygenSoundEffects.BUTTON_CLICK.soundEvent)
                 .enableDynamicBackground(GUISettings.instance().getEnabledButtonColor(), GUISettings.instance().getDisabledButtonColor(), GUISettings.instance().getHoveredButtonColor())
-                .setDisplayText(I18n.format("oxygen.gui.confirmButton"), true, GUISettings.instance().getButtonTextScale()));   
+                .setDisplayText(ClientReference.localize("oxygen.gui.confirmButton"), true, GUISettings.instance().getButtonTextScale()));   
 
         this.addSlotsFramework(this.clientOfferSlots = new GUISlotsFramework(GUIEnumPosition.CUSTOM, this.screen.container, 5, 10, 1, 5).setPosition(4, 26).enableSlotBottomLayer());
         this.addSlotsFramework(this.otherOfferSlots = new GUISlotsFramework(GUIEnumPosition.CUSTOM, this.screen.container, 0, 5, 1, 5).setPosition(101, 26).enableSlotBottomLayer());
@@ -129,7 +129,7 @@ public class ExchangeMenuGUISection extends AbstractGUISection {
     }
 
     public void updateCurrencyAmount() {
-        String currency = String.valueOf(StatWatcherHelperClient.getInt(OxygenMain.CURRENCY_GOLD_STAT_ID));
+        String currency = String.valueOf(WatcherHelperClient.getInt(OxygenPlayerData.CURRENCY_GOLD_ID));
         this.coinIconThird.setX(this.getWidth() - this.textWidth(currency, GUISettings.instance().getSubTextScale()) - 10);
         this.clientCurrencyAmountTextLabel.setX(this.getWidth() - this.textWidth(currency, GUISettings.instance().getSubTextScale()) - 2);
         this.clientCurrencyAmountTextLabel.setDisplayText(currency);
@@ -149,13 +149,14 @@ public class ExchangeMenuGUISection extends AbstractGUISection {
     }
 
     public void resetOtherOffer() {
-        this.otherCurrencyOfferTextLabel.setDisplayText("0");
+        if (OxygenConfig.ENABLE_CURRENCY.getBooleanValue()) {
+            this.currencyField.enable();
+            this.otherCurrencyOfferTextLabel.setDisplayText("0");
+        }
         this.offerButton.enable();
         this.cancelButton.disable();
         this.confirmButton.disable();
         this.clientConfirmedTextLabel.setDisplayText(ExchangeMenuGUISection.EXCHANGE_NOT_CONFIRMED);
         this.otherConfirmedTextLabel.setDisplayText(ExchangeMenuGUISection.EXCHANGE_NOT_CONFIRMED);  
-
-        this.currencyField.enable();
     }
 }

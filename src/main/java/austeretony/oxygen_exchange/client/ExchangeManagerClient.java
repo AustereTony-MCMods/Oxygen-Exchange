@@ -16,7 +16,7 @@ public class ExchangeManagerClient {
 
     private static ExchangeManagerClient instance;
 
-    private String username = "Undefined";//latest player username you sent exchange request, used in GUI
+    private String username = "Undefined";
 
     public static void create() {
         if (instance == null)
@@ -35,6 +35,10 @@ public class ExchangeManagerClient {
 
     public String getRequestedUsername() {
         return this.username;
+    }
+
+    public void setRequestedUsername(String username) {
+        this.username = username;
     }
 
     public void offerExchangeSynced(int offeredCurrency) {
@@ -70,7 +74,7 @@ public class ExchangeManagerClient {
             for (int i = 0; i < 5; i++)
                 guiContainer.container.inventorySlots.get(i).putStack(ItemStack.EMPTY);
             guiContainer.getMainSection().resetOtherOffer();   
-            
+
             guiContainer.container.enableClientOfferSlots();
         }
     }

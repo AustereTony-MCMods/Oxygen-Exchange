@@ -5,89 +5,107 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import austeretony.oxygen.common.api.OxygenHelperServer;
-import austeretony.oxygen.common.api.SoundEventsHelperServer;
-import austeretony.oxygen.common.api.StatWatcherHelperServer;
+import austeretony.oxygen.common.api.SoundEventHelperServer;
+import austeretony.oxygen.common.api.WatcherHelperServer;
 import austeretony.oxygen.common.config.OxygenConfig;
 import austeretony.oxygen.common.core.api.CommonReference;
-import austeretony.oxygen.common.main.OxygenMain;
 import austeretony.oxygen.common.main.OxygenPlayerData;
 import austeretony.oxygen.common.main.OxygenSoundEffects;
-import austeretony.oxygen.common.util.PacketBufferUtils;
+import austeretony.oxygen_exchange.common.inventory.ExchangeMenuContainer;
 import austeretony.oxygen_exchange.common.network.client.CPExchangeCommand;
 import austeretony.oxygen_exchange.common.network.client.CPSyncOtherPlayerOffer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.network.PacketBuffer;
 
 public class ExchangeProcess {
 
     private final Queue<ExchangeOperation> operations = new ConcurrentLinkedQueue<ExchangeOperation>();
 
-    public final ExchangeParticipant firstPlayer, secondPlayer;
+    public final ExchangeParticipant firstParticipant, secondParticipant;
 
-    public ExchangeProcess(UUID firstPlayerUUID, int firstPlayerIndex, UUID secondPlayerUUID, int secondPlayerIndex) {
-        this.firstPlayer = new ExchangeParticipant(firstPlayerUUID, firstPlayerIndex);
-        this.secondPlayer = new ExchangeParticipant(secondPlayerUUID, secondPlayerIndex);
+    public ExchangeProcess(EntityPlayerMP firstPlayer, int firstPlayerIndex, EntityPlayerMP secondPlayer, int secondPlayerIndex) {
+        this.firstParticipant = new ExchangeParticipant(firstPlayer, firstPlayerIndex);
+        this.secondParticipant = new ExchangeParticipant(secondPlayer, secondPlayerIndex);
     }
 
     public void processAction(int playerIndex, EnumExchangeOperation operation, int offeredCurrency) {
-        if (!OxygenHelperServer.isOnline(playerIndex == this.firstPlayer.playerIndex ? this.secondPlayer.playerIndex : this.firstPlayer.playerIndex))
+        if (operation != EnumExchangeOperation.CLOSE 
+                && !OxygenHelperServer.isOnline(playerIndex == this.firstParticipant.playerIndex ? this.secondParticipant.playerIndex : this.firstParticipant.playerIndex))
             operation = EnumExchangeOperation.CLOSE;    
         this.operations.offer(new ExchangeOperation(playerIndex, operation, offeredCurrency));
     }
 
     public boolean process() {
         ExchangeOperation operation;
+        Container container;
         while (!this.operations.isEmpty()) {
             operation = this.operations.poll();
             switch (operation.operation) {
             case OFFER:
-                if (operation.playerIndex == this.firstPlayer.playerIndex) {
-                    this.firstPlayer.setOfferedCurrency(operation.offeredCurrency);
+                if (operation.playerIndex == this.firstParticipant.playerIndex) {
+                    this.firstParticipant.setOfferedCurrency(operation.offeredCurrency);
+
+                    container = this.firstParticipant.player.openContainer;
+                    if (this.disableOfferSlots(container))
+                        return true;
+
                     for (int i = 5; i < 10; i++)
-                        this.firstPlayer.offeredItems[i - 5] = CommonReference.playerByUUID(this.firstPlayer.playerUUID).openContainer.inventorySlots.get(i).getStack().copy();
-                    this.syncOfferWith(this.secondPlayer.playerUUID, this.firstPlayer.offeredCurrency, this.firstPlayer.offeredItems);
+                        this.firstParticipant.offeredItems[i - 5] = container.inventorySlots.get(i).getStack().copy();
+
+                    this.syncOfferWith(this.secondParticipant.player, this.firstParticipant.offeredCurrency, this.firstParticipant.offeredItems);
                 } else {
-                    this.secondPlayer.setOfferedCurrency(operation.offeredCurrency);
+                    this.secondParticipant.setOfferedCurrency(operation.offeredCurrency);
+
+                    container = this.secondParticipant.player.openContainer;
+                    if (this.disableOfferSlots(container))
+                        return true;
+
                     for (int i = 5; i < 10; i++)
-                        this.secondPlayer.offeredItems[i - 5] = CommonReference.playerByUUID(this.secondPlayer.playerUUID).openContainer.inventorySlots.get(i).getStack().copy();
-                    this.syncOfferWith(this.firstPlayer.playerUUID, this.secondPlayer.offeredCurrency, this.secondPlayer.offeredItems);
+                        this.secondParticipant.offeredItems[i - 5] = container.inventorySlots.get(i).getStack().copy();
+
+                    this.syncOfferWith(this.firstParticipant.player, this.secondParticipant.offeredCurrency, this.secondParticipant.offeredItems);
                 }
                 break;
             case CANCEL:
-                if (operation.playerIndex == this.firstPlayer.playerIndex) {
-                    this.firstPlayer.setConfirmed(false);
-                    this.secondPlayer.setConfirmed(false);
-                    this.firstPlayer.resetOffer();
-                    this.notifyOfferReset(this.secondPlayer.playerUUID);
+                if (operation.playerIndex == this.firstParticipant.playerIndex) {
+                    this.firstParticipant.setConfirmed(false);
+                    this.secondParticipant.setConfirmed(false);
+                    this.firstParticipant.resetOffer();
+
+                    container = this.firstParticipant.player.openContainer;
+                    if (this.enbleOfferSlots(container))
+                        return true;
+                    container = this.secondParticipant.player.openContainer;
+                    if (this.enbleOfferSlots(container))
+                        return true;
+
+                    this.notifyOfferReset(this.secondParticipant.player);
                 } else {
-                    this.firstPlayer.setConfirmed(false);
-                    this.secondPlayer.setConfirmed(false);
-                    this.secondPlayer.resetOffer();
-                    this.notifyOfferReset(this.firstPlayer.playerUUID);
+                    this.firstParticipant.setConfirmed(false);
+                    this.secondParticipant.setConfirmed(false);
+                    this.secondParticipant.resetOffer();
+
+                    container = this.firstParticipant.player.openContainer;
+                    if (this.enbleOfferSlots(container))
+                        return true;
+                    container = this.secondParticipant.player.openContainer;
+                    if (this.enbleOfferSlots(container))
+                        return true;
+
+                    this.notifyOfferReset(this.firstParticipant.player);
                 }
                 break;
             case CONFIRM:
-                if (operation.playerIndex == this.firstPlayer.playerIndex) {
-                    this.firstPlayer.setConfirmed(true);
-
-                    if (OxygenHelperServer.isOnline(this.secondPlayer.playerIndex))
-                        this.notifyExchangeConfirmed(this.secondPlayer.playerUUID);
-                    else
-                        this.secondPlayer.setConfirmed(false);
+                if (operation.playerIndex == this.firstParticipant.playerIndex) {
+                    this.firstParticipant.setConfirmed(true);
+                    this.notifyExchangeConfirmed(this.secondParticipant.player);
                 } else {
-                    this.secondPlayer.setConfirmed(true);
-
-                    if (OxygenHelperServer.isOnline(this.firstPlayer.playerIndex))
-                        this.notifyExchangeConfirmed(this.firstPlayer.playerUUID);
-                    else
-                        this.firstPlayer.setConfirmed(false);
+                    this.secondParticipant.setConfirmed(true);
+                    this.notifyExchangeConfirmed(this.firstParticipant.player);
                 }
-                if (this.firstPlayer.confirmedExchange() 
-                        && this.secondPlayer.confirmedExchange()) {
+                if (this.firstParticipant.confirmedExchange() 
+                        && this.secondParticipant.confirmedExchange()) {
                     this.transferOffers();
                     return true;
                 }
@@ -99,90 +117,79 @@ public class ExchangeProcess {
         return false;
     }
 
-    private void syncOfferWith(UUID playerUUID, int offeredCurrency, ItemStack[] offeredItems) {
-        if (OxygenHelperServer.isOnline(playerUUID))
-            ExchangeMain.network().sendTo(new CPSyncOtherPlayerOffer(offeredCurrency, offeredItems), CommonReference.playerByUUID(playerUUID));
+    private boolean disableOfferSlots(Container container) {
+        if (!(container instanceof ExchangeMenuContainer))
+            return true;
+        ((ExchangeMenuContainer) container).disableClientOfferSlots();
+        return false;
     }
 
-    private void notifyOfferReset(UUID playerUUID) {
-        if (OxygenHelperServer.isOnline(playerUUID))
-            ExchangeMain.network().sendTo(new CPExchangeCommand(CPExchangeCommand.EnumCommand.SET_OTHER_RESET_OFFER), CommonReference.playerByUUID(playerUUID));
+    private boolean enbleOfferSlots(Container container) {
+        if (!(container instanceof ExchangeMenuContainer))
+            return true;
+        ((ExchangeMenuContainer) container).enableClientOfferSlots();
+        return false;
     }
 
-    private void notifyExchangeConfirmed(UUID playerUUID) {
-        ExchangeMain.network().sendTo(new CPExchangeCommand(CPExchangeCommand.EnumCommand.SET_OTHER_CONFIRMED_EXCHANGE), CommonReference.playerByUUID(playerUUID));
+    private void syncOfferWith(EntityPlayerMP player, int offeredCurrency, ItemStack[] offeredItems) {
+        ExchangeMain.network().sendTo(new CPSyncOtherPlayerOffer(offeredCurrency, offeredItems), player);
+    }
+
+    private void notifyOfferReset(EntityPlayerMP player) {
+        ExchangeMain.network().sendTo(new CPExchangeCommand(CPExchangeCommand.EnumCommand.SET_OTHER_RESET_OFFER), player);
+    }
+
+    private void notifyExchangeConfirmed(EntityPlayerMP player) {
+        ExchangeMain.network().sendTo(new CPExchangeCommand(CPExchangeCommand.EnumCommand.SET_OTHER_CONFIRMED_EXCHANGE), player);
     }
 
     private void transferOffers() {
-        EntityPlayerMP
-        firstPlayer = CommonReference.playerByUUID(this.firstPlayer.playerUUID),
-        secondPlayer = CommonReference.playerByUUID(this.secondPlayer.playerUUID);
-
         if (OxygenConfig.ENABLE_CURRENCY.getBooleanValue()) {
+            UUID 
+            firstUUID = CommonReference.getPersistentUUID(this.firstParticipant.player),
+            secondUUID = CommonReference.getPersistentUUID(this.secondParticipant.player);
             OxygenPlayerData 
-            firstData = OxygenHelperServer.getPlayerData(this.firstPlayer.playerUUID),
-            secondData = OxygenHelperServer.getPlayerData(this.secondPlayer.playerUUID);
+            firstData = OxygenHelperServer.getPlayerData(firstUUID),
+            secondData = OxygenHelperServer.getPlayerData(secondUUID);
 
-            if (this.firstPlayer.offeredCurrency > 0 || this.secondPlayer.offeredCurrency > 0) {
-                firstData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstPlayer.offeredCurrency);
-                secondData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondPlayer.offeredCurrency);
+            if (this.firstParticipant.offeredCurrency > 0 || this.secondParticipant.offeredCurrency > 0) {
+                firstData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstParticipant.offeredCurrency);
+                secondData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondParticipant.offeredCurrency);
 
-                firstData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondPlayer.offeredCurrency);
-                secondData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstPlayer.offeredCurrency);
+                firstData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondParticipant.offeredCurrency);
+                secondData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstParticipant.offeredCurrency);
 
-                OxygenHelperServer.savePlayerDataDelegated(this.firstPlayer.playerUUID, firstData);
-                OxygenHelperServer.savePlayerDataDelegated(this.secondPlayer.playerUUID, secondData);
+                OxygenHelperServer.savePersistentDataDelegated(firstData);
+                OxygenHelperServer.savePersistentDataDelegated(secondData);
 
-                StatWatcherHelperServer.setValue(this.firstPlayer.playerUUID, OxygenMain.CURRENCY_GOLD_STAT_ID, firstData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
-                StatWatcherHelperServer.setValue(this.secondPlayer.playerUUID, OxygenMain.CURRENCY_GOLD_STAT_ID, secondData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
+                WatcherHelperServer.setValue(firstUUID, OxygenPlayerData.CURRENCY_GOLD_ID, firstData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
+                WatcherHelperServer.setValue(secondUUID, OxygenPlayerData.CURRENCY_GOLD_ID, secondData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
 
-                SoundEventsHelperServer.playSoundClient(firstPlayer, OxygenSoundEffects.SELL.id);
-                SoundEventsHelperServer.playSoundClient(secondPlayer, OxygenSoundEffects.SELL.id);
+                SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.SELL.id);
+                SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.SELL.id);
             }
         }
 
         for (int i = 5; i < 10; i++) {//TODO Probably not safest way to remove items
-            firstPlayer.openContainer.inventorySlots.get(i).putStack(ItemStack.EMPTY);
-            secondPlayer.openContainer.inventorySlots.get(i).putStack(ItemStack.EMPTY);
+            this.firstParticipant.player.openContainer.inventorySlots.get(i).putStack(ItemStack.EMPTY);
+            this.secondParticipant.player.openContainer.inventorySlots.get(i).putStack(ItemStack.EMPTY);
         }
 
-        for (ItemStack itemStack : this.secondPlayer.offeredItems)
-            firstPlayer.inventory.addItemStackToInventory(itemStack);
-        for (ItemStack itemStack : this.firstPlayer.offeredItems)
-            secondPlayer.inventory.addItemStackToInventory(itemStack);
+        for (ItemStack itemStack : this.secondParticipant.offeredItems)
+            this.firstParticipant.player.inventory.addItemStackToInventory(itemStack);
+        for (ItemStack itemStack : this.firstParticipant.offeredItems)
+            this.secondParticipant.player.inventory.addItemStackToInventory(itemStack);
 
-        firstPlayer.openContainer.detectAndSendChanges();
-        secondPlayer.openContainer.detectAndSendChanges();
+        this.firstParticipant.player.openContainer.detectAndSendChanges();
+        this.secondParticipant.player.openContainer.detectAndSendChanges();
 
-        SoundEventsHelperServer.playSoundClient(firstPlayer, OxygenSoundEffects.INVENTORY.id);
-        SoundEventsHelperServer.playSoundClient(secondPlayer, OxygenSoundEffects.INVENTORY.id);
-    }
-
-    public static void writeItemStack(ItemStack itemStack, PacketBuffer buffer) {
-        buffer.writeInt(Item.getIdFromItem(itemStack.getItem()));
-        buffer.writeByte(itemStack.getCount());
-        buffer.writeByte(itemStack.getMetadata());
-        buffer.writeShort(itemStack.getItemDamage());
-        PacketBufferUtils.writeString(itemStack.hasTagCompound() ? itemStack.getTagCompound().toString() : "", buffer);
-    }
-
-    public static ItemStack readItemStack(PacketBuffer buffer) {
-        ItemStack itemStack = new ItemStack(Item.getItemById(buffer.readInt()), buffer.readByte(), buffer.readByte());
-        itemStack.setItemDamage(buffer.readShort());
-        String nbtStr = PacketBufferUtils.readString(buffer);
-        try {
-            if (!nbtStr.isEmpty())
-                itemStack.setTagCompound(JsonToNBT.getTagFromJson(nbtStr));
-        } catch (NBTException exception) {
-            ExchangeMain.LOGGER.error("ItemStack {} NBT parsing failure!", itemStack.toString());
-            exception.printStackTrace();
-        }
-        return itemStack;
+        SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.INVENTORY.id);
+        SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.INVENTORY.id);
     }
 
     public static class ExchangeParticipant {
 
-        public final UUID playerUUID;
+        public final EntityPlayerMP player;
 
         public final int playerIndex;
 
@@ -198,8 +205,8 @@ public class ExchangeProcess {
 
         private boolean confirmed;
 
-        public ExchangeParticipant(UUID playerUUID, int playerIndex) {
-            this.playerUUID = playerUUID;
+        public ExchangeParticipant(EntityPlayerMP player, int playerIndex) {
+            this.player = player;
             this.playerIndex = playerIndex;
         }
 

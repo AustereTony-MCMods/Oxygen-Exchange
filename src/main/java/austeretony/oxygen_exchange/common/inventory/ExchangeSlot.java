@@ -28,13 +28,6 @@ public class ExchangeSlot extends Slot {
         return !this.disabled;
     }
 
-    @Override
-    public ItemStack onTake(EntityPlayer thePlayer, ItemStack itemStack) {
-        if (!this.disabled)
-            this.onSlotChanged();
-        return itemStack;
-    }
-
     public void setDisabled(boolean flag) {
         this.disabled = flag;
     }

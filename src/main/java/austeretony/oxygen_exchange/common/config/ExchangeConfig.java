@@ -19,12 +19,12 @@ public class ExchangeConfig extends AbstractConfigHolder {
 
     @Override
     public String getVersion() {
-        return ExchangeMain.VERSION_EXTENDED;
+        return ExchangeMain.VERSION_CUSTOM;
     }
 
     @Override
     public String getExternalPath() {
-        return CommonReference.getGameFolder() + "/config/exchange/exchange.json";
+        return CommonReference.getGameFolder() + "/config/oxygen/exchange.json";
     }
 
     @Override

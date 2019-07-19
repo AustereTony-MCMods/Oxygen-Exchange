@@ -2,12 +2,12 @@ package austeretony.oxygen_exchange.client.gui;
 
 import java.util.UUID;
 
-import austeretony.oxygen.client.IInteractionExecutor;
 import austeretony.oxygen.client.api.OxygenHelperClient;
+import austeretony.oxygen.client.interaction.IInteractionMenuExecutor;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
 import net.minecraft.util.ResourceLocation;
 
-public class OfferExchangeExecutor implements IInteractionExecutor {
+public class OfferExchangeExecutor implements IInteractionMenuExecutor {
 
     @Override
     public String getName() {

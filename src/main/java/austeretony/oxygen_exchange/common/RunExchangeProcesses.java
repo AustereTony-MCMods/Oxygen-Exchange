@@ -2,7 +2,7 @@ package austeretony.oxygen_exchange.common;
 
 import austeretony.oxygen.common.api.process.AbstractPersistentProcess;
 
-public class RunExchangeProcess extends AbstractPersistentProcess {
+public class RunExchangeProcesses extends AbstractPersistentProcess {
 
     @Override
     public boolean hasDelay() {
