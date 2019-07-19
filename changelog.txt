@@ -1,2 +1,10 @@
+0.1.2a
++Compatibility with Oxygen Core 0.7.0a.
++Added command "/exchange <username>" for exchange request.
+
+0.1.1a
++Fixed wrong username displayed in exchange menu (for player who accepted exchange).
++Added server side blocking for offer slots.
+
 0.1.0a
 +Initial release.
