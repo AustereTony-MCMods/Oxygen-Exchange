@@ -1,3 +1,6 @@
+0.8.0b
++Performance improvements.
+
 0.1.2a
 +Compatibility with Oxygen Core 0.7.0a.
 +Added command "/exchange <username>" for exchange request.
