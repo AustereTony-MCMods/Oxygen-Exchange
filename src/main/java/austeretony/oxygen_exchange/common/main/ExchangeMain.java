@@ -34,7 +34,7 @@ import net.minecraftforge.fml.relauncher.Side;
         modid = ExchangeMain.MODID, 
         name = ExchangeMain.NAME, 
         version = ExchangeMain.VERSION,
-        dependencies = "required-after:oxygen@[0.7.0,);",//TODO Always check required Oxygen version before build
+        dependencies = "required-after:oxygen@[0.8.0,);",//TODO Always check required Oxygen version before build
         certificateFingerprint = "@FINGERPRINT@",
         updateJSON = ExchangeMain.VERSIONS_FORGE_URL)
 public class ExchangeMain {
@@ -42,13 +42,13 @@ public class ExchangeMain {
     public static final String 
     MODID = "oxygen_exchange", 
     NAME = "Oxygen: Exchange", 
-    VERSION = "0.1.2", 
-    VERSION_CUSTOM = VERSION + ":alpha:0",
+    VERSION = "0.8.0", 
+    VERSION_CUSTOM = VERSION + ":beta:0",
     GAME_VERSION = "1.12.2",
     VERSIONS_FORGE_URL = "https://raw.githubusercontent.com/AustereTony-MCMods/Oxygen-Exchange/info/mod_versions_forge.json";
 
     public static final int 
-    EXCHANGE_MOD_INDEX = 3,//Oxygen - 0, Teleportation - 1, Groups - 2, Merchants - 4, Players List - 5, Friends List - 6, Interaction - 7
+    EXCHANGE_MOD_INDEX = 3,//Oxygen - 0, Teleportation - 1, Groups - 2, Merchants - 4, Players List - 5, Friends List - 6, Interaction - 7, Mail - 8, Chat - 9
 
     EXCHANGE_REQUEST_ID = 30,
 
@@ -58,7 +58,7 @@ public class ExchangeMain {
 
     private static OxygenNetwork network;
 
-    @Instance(ExchangeMain.MODID)
+    @Instance(MODID)
     public static ExchangeMain instance; 
 
     @EventHandler
@@ -69,23 +69,15 @@ public class ExchangeMain {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         this.initNetwork();
-
         ExchangeManagerServer.create();
-
         CommonReference.registerEvent(new ExchangeEventsServer());
-
         OxygenHelperServer.addPersistentServiceProcess(new RunExchangeProcesses());
-
         if (event.getSide() == Side.CLIENT) {  
             ExchangeManagerClient.create();
-
             CommonReference.registerEvent(new ExchangeEventsClient());
-
             InteractionHelperClient.registerInteractionMenuAction(new OfferExchangeExecutor());
-
-            OxygenHelperClient.registerNotificationIcon(EXCHANGE_REQUEST_ID, OxygenGUITextures.REQUEST_ICON);
+            OxygenHelperClient.registerNotificationIcon(EXCHANGE_REQUEST_ID, OxygenGUITextures.REQUEST_ICONS);
         }
-
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new ExchangeGUIHandler());
     }   
 

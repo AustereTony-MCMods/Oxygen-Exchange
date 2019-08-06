@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import austeretony.oxygen.common.api.OxygenHelperServer;
 import austeretony.oxygen.common.api.WatcherHelperServer;
 import austeretony.oxygen.common.core.api.CommonReference;
-import austeretony.oxygen.common.main.EnumOxygenChatMessages;
+import austeretony.oxygen.common.main.EnumOxygenChatMessage;
 import austeretony.oxygen.common.main.OxygenMain;
 import austeretony.oxygen.common.main.OxygenPlayerData;
 import austeretony.oxygen.util.MathUtils;
@@ -48,12 +48,12 @@ public class ExchangeManagerServer {
             if (CommonReference.isEntitiesNear(sender, target, 5.0D)
                     && !this.haveExchangeProcess(playerIndex)
                     && !senderUUID.equals(targetUUID)) {
-                WatcherHelperServer.forceSync(senderUUID, OxygenPlayerData.CURRENCY_GOLD_ID);
-                WatcherHelperServer.forceSync(targetUUID, OxygenPlayerData.CURRENCY_GOLD_ID);
+                WatcherHelperServer.forceSync(senderUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID);
+                WatcherHelperServer.forceSync(targetUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID);
                 OxygenHelperServer.sendRequest(sender, target, 
                         new ExchangeRequest(ExchangeMain.EXCHANGE_REQUEST_ID, senderUUID, CommonReference.getName(sender)), true);
             } else
-                OxygenHelperServer.sendMessage(sender, OxygenMain.OXYGEN_MOD_INDEX, EnumOxygenChatMessages.REQUEST_RESET.ordinal());
+                OxygenHelperServer.sendMessage(sender, OxygenMain.OXYGEN_MOD_INDEX, EnumOxygenChatMessage.REQUEST_RESET.ordinal());
         }
     }
 
@@ -80,7 +80,7 @@ public class ExchangeManagerServer {
         int index = OxygenHelperServer.getPlayerIndex(playerUUID);
         if (this.haveExchangeProcess(index))
             this.getExchangeProcess(index).processAction(index, operation, 
-                    MathUtils.clamp(offeredCurrency, 0, OxygenHelperServer.getPlayerData(playerUUID).getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX)));
+                    MathUtils.clamp(offeredCurrency, 0, OxygenHelperServer.getPlayerData(playerUUID).getCurrency(OxygenPlayerData.CURRENCY_COINS_INDEX)));
     }
 
     public boolean haveExchangeProcess(int index) {

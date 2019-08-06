@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import austeretony.oxygen.common.api.OxygenHelperServer;
 import austeretony.oxygen.common.api.SoundEventHelperServer;
 import austeretony.oxygen.common.api.WatcherHelperServer;
-import austeretony.oxygen.common.config.OxygenConfig;
 import austeretony.oxygen.common.core.api.CommonReference;
+import austeretony.oxygen.common.currency.CurrencyHelperServer;
 import austeretony.oxygen.common.main.OxygenPlayerData;
 import austeretony.oxygen.common.main.OxygenSoundEffects;
 import austeretony.oxygen_exchange.common.inventory.ExchangeMenuContainer;
@@ -74,10 +74,10 @@ public class ExchangeProcess {
                     this.firstParticipant.resetOffer();
 
                     container = this.firstParticipant.player.openContainer;
-                    if (this.enbleOfferSlots(container))
+                    if (this.enableOfferSlots(container))
                         return true;
                     container = this.secondParticipant.player.openContainer;
-                    if (this.enbleOfferSlots(container))
+                    if (this.enableOfferSlots(container))
                         return true;
 
                     this.notifyOfferReset(this.secondParticipant.player);
@@ -87,10 +87,10 @@ public class ExchangeProcess {
                     this.secondParticipant.resetOffer();
 
                     container = this.firstParticipant.player.openContainer;
-                    if (this.enbleOfferSlots(container))
+                    if (this.enableOfferSlots(container))
                         return true;
                     container = this.secondParticipant.player.openContainer;
-                    if (this.enbleOfferSlots(container))
+                    if (this.enableOfferSlots(container))
                         return true;
 
                     this.notifyOfferReset(this.firstParticipant.player);
@@ -124,7 +124,7 @@ public class ExchangeProcess {
         return false;
     }
 
-    private boolean enbleOfferSlots(Container container) {
+    private boolean enableOfferSlots(Container container) {
         if (!(container instanceof ExchangeMenuContainer))
             return true;
         ((ExchangeMenuContainer) container).enableClientOfferSlots();
@@ -144,30 +144,29 @@ public class ExchangeProcess {
     }
 
     private void transferOffers() {
-        if (OxygenConfig.ENABLE_CURRENCY.getBooleanValue()) {
+        if (this.firstParticipant.offeredCurrency > 0 || this.secondParticipant.offeredCurrency > 0) {
             UUID 
             firstUUID = CommonReference.getPersistentUUID(this.firstParticipant.player),
             secondUUID = CommonReference.getPersistentUUID(this.secondParticipant.player);
-            OxygenPlayerData 
-            firstData = OxygenHelperServer.getPlayerData(firstUUID),
-            secondData = OxygenHelperServer.getPlayerData(secondUUID);
 
-            if (this.firstParticipant.offeredCurrency > 0 || this.secondParticipant.offeredCurrency > 0) {
-                firstData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstParticipant.offeredCurrency);
-                secondData.removeCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondParticipant.offeredCurrency);
-
-                firstData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.secondParticipant.offeredCurrency);
-                secondData.addCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX, this.firstParticipant.offeredCurrency);
-
-                OxygenHelperServer.savePersistentDataDelegated(firstData);
-                OxygenHelperServer.savePersistentDataDelegated(secondData);
-
-                WatcherHelperServer.setValue(firstUUID, OxygenPlayerData.CURRENCY_GOLD_ID, firstData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
-                WatcherHelperServer.setValue(secondUUID, OxygenPlayerData.CURRENCY_GOLD_ID, secondData.getCurrency(OxygenPlayerData.CURRENCY_GOLD_INDEX));
-
-                SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.SELL.id);
-                SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.SELL.id);
+            if (this.firstParticipant.offeredCurrency > 0) {
+                CurrencyHelperServer.removeCurrency(firstUUID, this.firstParticipant.offeredCurrency);
+                CurrencyHelperServer.addCurrency(secondUUID, this.firstParticipant.offeredCurrency);
             }
+
+            if (this.secondParticipant.offeredCurrency > 0) {
+                CurrencyHelperServer.removeCurrency(secondUUID, this.secondParticipant.offeredCurrency);
+                CurrencyHelperServer.addCurrency(firstUUID, this.secondParticipant.offeredCurrency);
+            }
+
+            CurrencyHelperServer.save(firstUUID);
+            CurrencyHelperServer.save(secondUUID);
+
+            WatcherHelperServer.setValue(firstUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID, (int) CurrencyHelperServer.getCurrency(firstUUID));
+            WatcherHelperServer.setValue(secondUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID, (int) CurrencyHelperServer.getCurrency(secondUUID));
+
+            SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.SELL.id);
+            SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.SELL.id);
         }
 
         for (int i = 5; i < 10; i++) {//TODO Probably not safest way to remove items

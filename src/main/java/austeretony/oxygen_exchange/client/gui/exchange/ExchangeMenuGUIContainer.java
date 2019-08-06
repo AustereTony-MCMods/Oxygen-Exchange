@@ -13,9 +13,11 @@ import net.minecraft.util.ResourceLocation;
 
 public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
 
-    public static final ResourceLocation EXCHANGE_MENU_BACKGROUND_TEXTURE = new ResourceLocation(ExchangeMain.MODID, "textures/gui/menu/exchange_menu_background.png");
+    public static final ResourceLocation 
+    EXCHANGE_MENU_BACKGROUND = new ResourceLocation(ExchangeMain.MODID, "textures/gui/exchange/exchange_menu.png"),
+    CONFIRMATION_CALLBACK_BACKGROUND = new ResourceLocation(ExchangeMain.MODID, "textures/gui/exchange/confirmation_callback.png");
 
-    private ExchangeMenuGUISection mainSection;
+    private ExchangeMenuGUISection exchangeSection;
 
     public final ExchangeMenuContainer container;
 
@@ -31,12 +33,12 @@ public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
 
     @Override
     protected void initSections() {
-        this.getWorkspace().initSection(this.mainSection = new ExchangeMenuGUISection(this));        
+        this.getWorkspace().initSection(this.exchangeSection = new ExchangeMenuGUISection(this));        
     }
 
     @Override
     protected AbstractGUISection getDefaultSection() {
-        return this.mainSection;
+        return this.exchangeSection;
     }
 
     @Override
@@ -55,6 +57,6 @@ public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
     }
 
     public ExchangeMenuGUISection getMainSection() {
-        return this.mainSection;
+        return this.exchangeSection;
     }
 }

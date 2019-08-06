@@ -53,10 +53,10 @@ public class ExchangeRequest extends AbstractNotification {
     public void accepted(EntityPlayer player) {        
         if (OxygenHelperServer.isOnline(this.senderUUID)) {
             ExchangeManagerServer.instance().processExchangeRequestReply(player, this.senderUUID);
-            OxygenHelperServer.sendMessage(CommonReference.playerByUUID(this.senderUUID), ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessages.EXCHANGE_REQUEST_ACCEPTED_SENDER.ordinal());
+            OxygenHelperServer.sendMessage(CommonReference.playerByUUID(this.senderUUID), ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessage.EXCHANGE_REQUEST_ACCEPTED_SENDER.ordinal());
         }
 
-        OxygenHelperServer.sendMessage(player, ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessages.EXCHANGE_REQUEST_ACCEPTED_TARGET.ordinal());
+        OxygenHelperServer.sendMessage(player, ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessage.EXCHANGE_REQUEST_ACCEPTED_TARGET.ordinal());
 
         OxygenHelperServer.setRequesting(this.senderUUID, false);
     }
@@ -64,8 +64,8 @@ public class ExchangeRequest extends AbstractNotification {
     @Override
     public void rejected(EntityPlayer player) {
         if (OxygenHelperServer.isOnline(this.senderUUID))
-            OxygenHelperServer.sendMessage(CommonReference.playerByUUID(this.senderUUID), ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessages.EXCHANGE_REQUEST_REJECTED_SENDER.ordinal());
-        OxygenHelperServer.sendMessage(player, ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessages.EXCHANGE_REQUEST_REJECTED_TARGET.ordinal());
+            OxygenHelperServer.sendMessage(CommonReference.playerByUUID(this.senderUUID), ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessage.EXCHANGE_REQUEST_REJECTED_SENDER.ordinal());
+        OxygenHelperServer.sendMessage(player, ExchangeMain.EXCHANGE_MOD_INDEX, EnumExchangeChatMessage.EXCHANGE_REQUEST_REJECTED_TARGET.ordinal());
 
         OxygenHelperServer.setRequesting(this.senderUUID, false);
     }

@@ -2,10 +2,10 @@
 {
   "modid": "oxygen_exchange",
   "name": "Oxygen: Exchange",
-  "description": "Safe exchange interface for players.",
-  "version": "0.1.2",
+  "description": "System of safe exchange of items and currency for players.",
+  "version": "0.8.0",
   "mcversion": "1.12.2",
-  "url": "https://minecraft.curseforge.com/projects/oxygen-exchange",
+  "url": "https://www.curseforge.com/minecraft/mc-mods/oxygen-exchange",
   "updateUrl": "",
   "authorList": ["AustereTony"],
   "credits": "",

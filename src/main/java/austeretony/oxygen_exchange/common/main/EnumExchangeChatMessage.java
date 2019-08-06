@@ -3,7 +3,7 @@ package austeretony.oxygen_exchange.common.main;
 import austeretony.oxygen.client.core.api.ClientReference;
 import net.minecraft.util.text.TextComponentTranslation;
 
-public enum EnumExchangeChatMessages {
+public enum EnumExchangeChatMessage {
 
     EXCHANGE_REQUEST_ACCEPTED_SENDER,
     EXCHANGE_REQUEST_ACCEPTED_TARGET,
