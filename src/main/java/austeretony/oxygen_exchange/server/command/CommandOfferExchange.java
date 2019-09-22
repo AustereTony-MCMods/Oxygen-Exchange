@@ -1,7 +1,7 @@
-package austeretony.oxygen_exchange.common.command;
+package austeretony.oxygen_exchange.server.command;
 
-import austeretony.oxygen.common.core.api.CommonReference;
-import austeretony.oxygen_exchange.common.ExchangeManagerServer;
+import austeretony.oxygen_core.common.api.CommonReference;
+import austeretony.oxygen_exchange.server.ExchangeManagerServer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -35,7 +35,7 @@ public class CommandOfferExchange extends CommandBase {
         requestedMP = CommonReference.playerByUsername(args[0]);
         if (requestedMP != null) {
             senderMP = getCommandSenderAsPlayer(sender);
-            ExchangeManagerServer.instance().sendExchangeRequest(senderMP, CommonReference.getEntityId(requestedMP));
+            ExchangeManagerServer.instance().getExchangeProcessesManager().sendExchangeRequest(senderMP, CommonReference.getEntityId(requestedMP));
         } else
             throw new CommandException("oxygen.command.exception.playerNotFound", args[0]);
     }

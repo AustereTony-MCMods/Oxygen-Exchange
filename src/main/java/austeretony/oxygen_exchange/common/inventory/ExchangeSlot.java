@@ -15,7 +15,7 @@ public class ExchangeSlot extends Slot {
 
     public ExchangeSlot(IInventory inventory, int index, int xPosition, int yPosition, boolean disabled) {
         this(inventory, index, xPosition, yPosition);
-        this.disabled = true;
+        this.disabled = disabled;
     }
 
     @Override

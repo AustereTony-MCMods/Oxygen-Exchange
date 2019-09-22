@@ -1,38 +1,44 @@
 package austeretony.oxygen_exchange.common.network.server;
 
-import austeretony.oxygen.common.network.ProxyPacket;
-import austeretony.oxygen_exchange.common.ExchangeManagerServer;
-import austeretony.oxygen_exchange.common.main.ExchangeProcess.EnumExchangeOperation;
+import austeretony.oxygen_core.common.api.CommonReference;
+import austeretony.oxygen_core.common.network.Packet;
+import austeretony.oxygen_core.server.api.OxygenHelperServer;
+import austeretony.oxygen_core.server.api.RequestsFilterHelper;
+import austeretony.oxygen_exchange.common.EnumExchangeOperation;
+import austeretony.oxygen_exchange.common.main.ExchangeMain;
+import austeretony.oxygen_exchange.server.ExchangeManagerServer;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
 
-public class SPExchangeMenuOperation extends ProxyPacket {
+public class SPExchangeMenuOperation extends Packet {
 
-    private EnumExchangeOperation operation;
+    private int ordinal;
 
-    private int offeredCurrency;
+    private long offeredCurrency;
 
     public SPExchangeMenuOperation() {}
 
-    public SPExchangeMenuOperation(EnumExchangeOperation operation) {
-        this.operation = operation;
-    }
-
-    public SPExchangeMenuOperation(int offeredCurrency) {
-        this.operation = EnumExchangeOperation.OFFER;
+    public SPExchangeMenuOperation(EnumExchangeOperation operation, long offeredCurrency) {
+        this.ordinal = operation.ordinal();
         this.offeredCurrency = offeredCurrency;
     }
 
     @Override
-    public void write(PacketBuffer buffer, INetHandler netHandler) {
-        buffer.writeByte(this.operation.ordinal());
-        if (this.operation == EnumExchangeOperation.OFFER)
-            buffer.writeInt(this.offeredCurrency);
+    public void write(ByteBuf buffer, INetHandler netHandler) {
+        buffer.writeByte(this.ordinal);
+        buffer.writeLong(this.offeredCurrency);
     }
 
     @Override
-    public void read(PacketBuffer buffer, INetHandler netHandler) {
-        this.operation = EnumExchangeOperation.values()[buffer.readByte()];
-        ExchangeManagerServer.instance().processExchangeOperation(getEntityPlayerMP(netHandler), this.operation, this.operation == EnumExchangeOperation.OFFER ? buffer.readInt() : 0);
+    public void read(ByteBuf buffer, INetHandler netHandler) {
+        final EntityPlayerMP playerMP = getEntityPlayerMP(netHandler);
+        if (RequestsFilterHelper.getLock(CommonReference.getPersistentUUID(playerMP), ExchangeMain.EXCHANGE_OPERATION_REQUEST_ID)) {
+            final int ordinal = buffer.readByte();
+            final long offeredCurrency = buffer.readLong();
+            if (ordinal >= 0 && ordinal < EnumExchangeOperation.values().length)
+                OxygenHelperServer.addRoutineTask(()->ExchangeManagerServer.instance().getExchangeProcessesManager()
+                        .processExchangeOperation(playerMP, EnumExchangeOperation.values()[ordinal], offeredCurrency));
+        }
     }
 }

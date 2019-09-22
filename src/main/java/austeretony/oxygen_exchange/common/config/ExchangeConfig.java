@@ -2,17 +2,19 @@ package austeretony.oxygen_exchange.common.config;
 
 import java.util.List;
 
-import austeretony.oxygen.common.api.config.AbstractConfigHolder;
-import austeretony.oxygen.common.api.config.ConfigValue;
-import austeretony.oxygen.common.core.api.CommonReference;
+import austeretony.oxygen_core.common.EnumValueType;
+import austeretony.oxygen_core.common.api.CommonReference;
+import austeretony.oxygen_core.common.api.config.AbstractConfigHolder;
+import austeretony.oxygen_core.common.api.config.ConfigValueImpl;
+import austeretony.oxygen_core.common.config.ConfigValue;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
 
 public class ExchangeConfig extends AbstractConfigHolder {
 
-    public static final ConfigValue EXCHANGE_REQUEST_EXPIRE_TIME = new ConfigValue(ConfigValue.EnumValueType.INT, "main", "exchange_request_expire_time_seconds");
+    public static final ConfigValue EXCHANGE_REQUEST_EXPIRE_TIME_SECONDS = new ConfigValueImpl(EnumValueType.INT, "main", "exchange_request_expire_time_seconds");
 
     @Override
-    public String getModId() {
+    public String getDomain() {
         return ExchangeMain.MODID;
     }
 
@@ -33,7 +35,7 @@ public class ExchangeConfig extends AbstractConfigHolder {
 
     @Override
     public void getValues(List<ConfigValue> values) {
-        values.add(EXCHANGE_REQUEST_EXPIRE_TIME);
+        values.add(EXCHANGE_REQUEST_EXPIRE_TIME_SECONDS);
     }
 
     @Override

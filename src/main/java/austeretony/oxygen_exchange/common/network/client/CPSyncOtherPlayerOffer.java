@@ -1,38 +1,36 @@
 package austeretony.oxygen_exchange.common.network.client;
 
-import austeretony.oxygen.common.network.ProxyPacket;
-import austeretony.oxygen.util.PacketBufferUtils;
+import austeretony.oxygen_core.client.api.OxygenHelperClient;
+import austeretony.oxygen_core.common.network.Packet;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
-import net.minecraft.item.ItemStack;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
 
-public class CPSyncOtherPlayerOffer extends ProxyPacket {
+public class CPSyncOtherPlayerOffer extends Packet {
 
-    private int offeredCurrency;
+    private long offeredCurrency;
 
-    private ItemStack[] offeredItems;
+    private byte[] compressedItems;
 
     public CPSyncOtherPlayerOffer() {}
 
-    public CPSyncOtherPlayerOffer(int offeredCurrency, ItemStack[] offeredItems) {
+    public CPSyncOtherPlayerOffer(long offeredCurrency, byte[] compressedItems) {
         this.offeredCurrency = offeredCurrency;
-        this.offeredItems = offeredItems;
+        this.compressedItems = compressedItems;
     }
 
     @Override
-    public void write(PacketBuffer buffer, INetHandler netHandler) {
-        buffer.writeInt(this.offeredCurrency);
-        for (ItemStack itemStack : this.offeredItems)
-            PacketBufferUtils.writeItemStack(itemStack, buffer);
+    public void write(ByteBuf buffer, INetHandler netHandler) {
+        buffer.writeLong(this.offeredCurrency);
+        buffer.writeShort(this.compressedItems.length);
+        buffer.writeBytes(this.compressedItems);
     }
 
     @Override
-    public void read(PacketBuffer buffer, INetHandler netHandler) {
-        this.offeredCurrency = buffer.readInt();
-        this.offeredItems = new ItemStack[5];
-        for (int i = 0; i < 5; i++)
-            this.offeredItems[i] = PacketBufferUtils.readItemStack(buffer);
-        ExchangeManagerClient.instance().setOtherPlayerOffer(this.offeredCurrency, this.offeredItems);
+    public void read(ByteBuf buffer, INetHandler netHandler) {
+        final long offeredCurrency = buffer.readLong();
+        final byte[] compressedItems = new byte[buffer.readShort()];
+        buffer.readBytes(compressedItems);
+        OxygenHelperClient.addRoutineTask(()->ExchangeManagerClient.instance().getExchangeMenuManager().otherPlayerMadeOffer(offeredCurrency, compressedItems));
     }
 }

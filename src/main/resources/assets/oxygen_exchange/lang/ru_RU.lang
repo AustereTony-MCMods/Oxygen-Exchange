@@ -12,7 +12,8 @@ oxygen_exchange.gui.exchange.confirmCallback.request=Вы уверены?
 oxygen_exchange.gui.exchange.confirmed=Обмен принят
 oxygen_exchange.gui.exchange.notConfirmed=Обмен не принят
 
-oxygen_exchange.message.request.acceptedSender=Ваше предложение на обмен принято.
-oxygen_exchange.message.request.acceptedTarget=Вы приняли предложение на обмен.
-oxygen_exchange.message.request.rejectedSender=Ваше предложение на обмен отклонено.
-oxygen_exchange.message.request.rejectedTarget=Вы отклонили предложение на обмен.
+oxygen_exchange.status.acceptedSender=Ваше предложение на обмен принято
+oxygen_exchange.status.acceptedTarget=Вы приняли предложение на обмен
+oxygen_exchange.status.rejectedSender=Ваше предложение на обмен отклонено
+oxygen_exchange.status.rejectedTarget=Вы отклонили предложение на обмен
+oxygen_exchange.status.itemBlacklisted=Предмет в чёрном списке
