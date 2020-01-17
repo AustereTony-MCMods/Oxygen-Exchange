@@ -48,7 +48,7 @@ public class ExchangeRequest extends AbstractNotification {
 
     @Override
     public int getExpireTimeSeconds() {
-        return ExchangeConfig.EXCHANGE_REQUEST_EXPIRE_TIME_SECONDS.getIntValue();
+        return ExchangeConfig.EXCHANGE_REQUEST_EXPIRE_TIME_SECONDS.asInt();
     }
 
     @Override

@@ -5,16 +5,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import austeretony.oxygen_core.common.api.CommonReference;
-import austeretony.oxygen_core.common.currency.CurrencyHelperServer;
 import austeretony.oxygen_core.common.main.OxygenMain;
 import austeretony.oxygen_core.common.sound.OxygenSoundEffects;
 import austeretony.oxygen_core.common.util.ByteBufUtils;
-import austeretony.oxygen_core.server.OxygenPlayerData;
+import austeretony.oxygen_core.server.api.CurrencyHelperServer;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
 import austeretony.oxygen_core.server.api.SoundEventHelperServer;
-import austeretony.oxygen_core.server.api.WatcherHelperServer;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
-import austeretony.oxygen_exchange.common.inventory.ExchangeMenuContainer;
+import austeretony.oxygen_exchange.common.inventory.ContainerExchangeMenu;
 import austeretony.oxygen_exchange.common.main.EnumExchangeStatusMessage;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
 import austeretony.oxygen_exchange.common.network.client.CPExchangeOperation;
@@ -37,9 +35,10 @@ public class ExchangeProcess {
     }
 
     public void processAction(int playerIndex, EnumExchangeOperation operation, long offeredCurrency) {
-        if (operation != EnumExchangeOperation.CLOSE 
-                && !OxygenHelperServer.isPlayerOnline(playerIndex == this.firstParticipant.playerIndex ? this.secondParticipant.playerIndex : this.firstParticipant.playerIndex))
-            operation = EnumExchangeOperation.CLOSE;    
+        if (operation != EnumExchangeOperation.CLOSE) {
+            if (!OxygenHelperServer.isPlayerOnline(this.firstParticipant.playerIndex) || !OxygenHelperServer.isPlayerOnline(this.secondParticipant.playerIndex))
+                operation = EnumExchangeOperation.CLOSE;    
+        }
         this.operations.offer(new QueuedExchangeOperation(playerIndex, operation, offeredCurrency));
     }
 
@@ -148,16 +147,16 @@ public class ExchangeProcess {
     }
 
     private boolean disableOfferSlots(Container container) {
-        if (!(container instanceof ExchangeMenuContainer))
+        if (!(container instanceof ContainerExchangeMenu))
             return true;
-        ((ExchangeMenuContainer) container).disableClientOfferSlots();
+        ((ContainerExchangeMenu) container).disableOfferSlots();
         return false;
     }
 
     private boolean enableOfferSlots(Container container) {
-        if (!(container instanceof ExchangeMenuContainer))
+        if (!(container instanceof ContainerExchangeMenu))
             return true;
-        ((ExchangeMenuContainer) container).enableClientOfferSlots();
+        ((ContainerExchangeMenu) container).enableOfferSlots();
         return false;
     }
 
@@ -181,26 +180,20 @@ public class ExchangeProcess {
     }
 
     private void transferOffers() {
-        if (this.firstParticipant.offeredCurrency > 0 || this.secondParticipant.offeredCurrency > 0) {
+        if (this.firstParticipant.offeredCurrency > 0L || this.secondParticipant.offeredCurrency > 0L) {
             UUID 
             firstUUID = CommonReference.getPersistentUUID(this.firstParticipant.player),
             secondUUID = CommonReference.getPersistentUUID(this.secondParticipant.player);
 
-            if (this.firstParticipant.offeredCurrency > 0) {
-                CurrencyHelperServer.removeCurrency(firstUUID, this.firstParticipant.offeredCurrency);
-                CurrencyHelperServer.addCurrency(secondUUID, this.firstParticipant.offeredCurrency);
+            if (this.firstParticipant.offeredCurrency > 0L) {
+                CurrencyHelperServer.removeCurrency(firstUUID, this.firstParticipant.offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX);
+                CurrencyHelperServer.addCurrency(secondUUID, this.firstParticipant.offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX);
             }
 
-            if (this.secondParticipant.offeredCurrency > 0) {
-                CurrencyHelperServer.removeCurrency(secondUUID, this.secondParticipant.offeredCurrency);
-                CurrencyHelperServer.addCurrency(firstUUID, this.secondParticipant.offeredCurrency);
+            if (this.secondParticipant.offeredCurrency > 0L) {
+                CurrencyHelperServer.removeCurrency(secondUUID, this.secondParticipant.offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX);
+                CurrencyHelperServer.addCurrency(firstUUID, this.secondParticipant.offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX);
             }
-
-            CurrencyHelperServer.save(firstUUID);
-            CurrencyHelperServer.save(secondUUID);
-
-            WatcherHelperServer.setValue(firstUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID, CurrencyHelperServer.getCurrency(firstUUID));
-            WatcherHelperServer.setValue(secondUUID, OxygenPlayerData.CURRENCY_COINS_WATCHER_ID, CurrencyHelperServer.getCurrency(secondUUID));
 
             SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.SELL.id);
             SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.SELL.id);
@@ -233,27 +226,22 @@ public class ExchangeProcess {
         this.secondParticipant.player.openContainer.detectAndSendChanges();
     }
 
-    public static class ExchangeParticipant {
+    static class ExchangeParticipant {
 
         public final EntityPlayerMP player;
 
         public final int playerIndex;
 
-        public final ItemStack[] offeredItems = new ItemStack[] {
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY
-        };
+        public final ItemStack[] offeredItems = new ItemStack[5];
 
         private long offeredCurrency;
 
         private boolean confirmed;
 
-        public ExchangeParticipant(EntityPlayerMP player, int playerIndex) {
+        ExchangeParticipant(EntityPlayerMP player, int playerIndex) {
             this.player = player;
             this.playerIndex = playerIndex;
+            this.resetOffer();
         }
 
         public long getOfferedCurrency() {

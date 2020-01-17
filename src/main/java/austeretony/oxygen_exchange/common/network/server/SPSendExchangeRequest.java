@@ -3,7 +3,6 @@ package austeretony.oxygen_exchange.common.network.server;
 import austeretony.oxygen_core.common.api.CommonReference;
 import austeretony.oxygen_core.common.network.Packet;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
-import austeretony.oxygen_core.server.api.RequestsFilterHelper;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
 import austeretony.oxygen_exchange.server.ExchangeManagerServer;
 import io.netty.buffer.ByteBuf;
@@ -28,10 +27,9 @@ public class SPSendExchangeRequest extends Packet {
     @Override
     public void read(ByteBuf buffer, INetHandler netHandler) {
         final EntityPlayerMP playerMP = getEntityPlayerMP(netHandler);
-        if (RequestsFilterHelper.getLock(CommonReference.getPersistentUUID(playerMP), ExchangeMain.EXCHANGE_REQUEST_REQUEST_ID)) {
+        if (OxygenHelperServer.isNetworkRequestAvailable(CommonReference.getPersistentUUID(playerMP), ExchangeMain.EXCHANGE_OPERATION_REQUEST_ID)) {
             final int index = buffer.readInt();
-            OxygenHelperServer.addRoutineTask(()->ExchangeManagerServer.instance().getExchangeProcessesManager()
-                    .sendExchangeRequest(playerMP, index));
+            OxygenHelperServer.addRoutineTask(()->ExchangeManagerServer.instance().getExchangeProcessesManager().sendExchangeRequest(playerMP, index));
         }
     }
 }

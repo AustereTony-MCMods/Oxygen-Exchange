@@ -2,7 +2,7 @@ package austeretony.oxygen_exchange.client;
 
 import austeretony.oxygen_core.client.api.ClientReference;
 import austeretony.oxygen_core.common.util.ByteBufUtils;
-import austeretony.oxygen_exchange.client.gui.exchange.ExchangeMenuGUIContainer;
+import austeretony.oxygen_exchange.client.gui.exchange.ExchangeMenuContainer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.item.ItemStack;
@@ -12,21 +12,21 @@ public class ExchangeMenuManager {
     public void madeOffer() {
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).madeOffer();
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).madeOffer();
         });
     }
 
     public void canceledExchange() {
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).canceledExchange();
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).canceledExchange();
         });
     }
 
     public void confirmedExchange() {
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).confirmedExchange();
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).confirmedExchange();
         });
     }
 
@@ -45,25 +45,25 @@ public class ExchangeMenuManager {
         }
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).otherPlayerMadeOffer(offeredCurrency, offeredItems);
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).otherPlayerMadeOffer(offeredCurrency, offeredItems);
         });
     }
 
     public void otherPlayerCanceledExchange() {       
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).otherPlayerCanceledExchange();
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).otherPlayerCanceledExchange();
         });
     }
 
     public void otherPlayerConfirmedExchange() {
         ClientReference.delegateToClientThread(()->{
             if (isMenuOpened())
-                ((ExchangeMenuGUIContainer) ClientReference.getCurrentScreen()).otherPlayerConfirmedExchange();
+                ((ExchangeMenuContainer) ClientReference.getCurrentScreen()).otherPlayerConfirmedExchange();
         });
     }
 
     public static boolean isMenuOpened() {
-        return ClientReference.hasActiveGUI() && ClientReference.getCurrentScreen() instanceof ExchangeMenuGUIContainer;
+        return ClientReference.hasActiveGUI() && ClientReference.getCurrentScreen() instanceof ExchangeMenuContainer;
     }
 }

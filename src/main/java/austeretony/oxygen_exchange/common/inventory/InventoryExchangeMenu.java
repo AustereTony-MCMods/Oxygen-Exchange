@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
 
-public class ExchangeMenuInventory implements IInventory {
+public class InventoryExchangeMenu implements IInventory {
 
     public final NonNullList<ItemStack> inventoryArray = NonNullList.<ItemStack>withSize(10, ItemStack.EMPTY);
 

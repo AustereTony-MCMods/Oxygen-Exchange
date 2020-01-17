@@ -5,15 +5,15 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-public class ExchangeSlot extends Slot {
+public class SlotExchange extends Slot {
 
     private boolean disabled;
 
-    public ExchangeSlot(IInventory inventory, int index, int xPosition, int yPosition) {
+    public SlotExchange(IInventory inventory, int index, int xPosition, int yPosition) {
         super(inventory, index, xPosition, yPosition);
     }
 
-    public ExchangeSlot(IInventory inventory, int index, int xPosition, int yPosition, boolean disabled) {
+    public SlotExchange(IInventory inventory, int index, int xPosition, int yPosition, boolean disabled) {
         this(inventory, index, xPosition, yPosition);
         this.disabled = disabled;
     }

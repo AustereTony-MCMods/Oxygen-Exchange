@@ -9,7 +9,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class ExchangeEventsClient {
 
     @SubscribeEvent
-    public void onNotificationRecieve(OxygenNotificationRecievedEvent event) {
+    public void onNotificationRecieved(OxygenNotificationRecievedEvent event) {
         if (event.notification.getType() == EnumNotification.REQUEST 
                 && event.notification.getIndex() == ExchangeMain.EXCHANGE_REQUEST_ID)
             ExchangeManagerClient.instance().getExchangeOperationsManager().setRequestedUsername(event.notification.getArguments()[0]);

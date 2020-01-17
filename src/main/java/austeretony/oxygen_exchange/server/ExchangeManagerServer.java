@@ -16,7 +16,7 @@ public class ExchangeManagerServer {
 
     private void scheduleRepeatableProcesses() {
         OxygenManagerServer.instance().getExecutionManager().getExecutors().getSchedulerExecutorService().scheduleAtFixedRate(
-                ()->this.exchangeProcessesManager.runExchangeProcesses(), 1000L, 250L, TimeUnit.MILLISECONDS);
+                ()->this.exchangeProcessesManager.process(), 1L, 1L, TimeUnit.SECONDS);
     }
 
     public static void create() {

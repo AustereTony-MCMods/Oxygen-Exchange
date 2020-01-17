@@ -6,12 +6,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import austeretony.oxygen_core.common.api.CommonReference;
-import austeretony.oxygen_core.common.currency.CurrencyHelperServer;
 import austeretony.oxygen_core.common.main.EnumOxygenStatusMessage;
 import austeretony.oxygen_core.common.main.OxygenMain;
-import austeretony.oxygen_core.common.util.MathUtils;
+import austeretony.oxygen_core.server.api.CurrencyHelperServer;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
+import austeretony.oxygen_core.server.api.PrivilegesProviderServer;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
+import austeretony.oxygen_exchange.common.main.EnumExchangePrivilege;
 import austeretony.oxygen_exchange.common.main.ExchangeGUIHandler;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,12 +33,10 @@ public class ExchangeProcessesManagerServer {
     }
 
     public void onPlayerUnloaded(EntityPlayerMP playerMP) {
-        int index = OxygenHelperServer.getPlayerIndex(CommonReference.getPersistentUUID(playerMP));
-        if (this.haveExchangeProcess(index))
-            this.getExchangeProcess(index).processAction(index, EnumExchangeOperation.CLOSE, 0);
+        this.processExchangeOperation(playerMP, EnumExchangeOperation.CLOSE, 0L);
     }
 
-    public void runExchangeProcesses() {
+    public void process() {
         OxygenHelperServer.addRoutineTask(()->{
             Iterator<ExchangeProcess> iterator = this.exchangeProcesses.values().iterator();
             ExchangeProcess exchangeProcess;
@@ -65,6 +64,8 @@ public class ExchangeProcessesManagerServer {
             EntityPlayerMP target = CommonReference.playerByUUID(targetUUID);
             if (CommonReference.isEntitiesNear(senderMP, target, 5.0D)
                     && !this.haveExchangeProcess(playerIndex)
+                    && PrivilegesProviderServer.getAsBoolean(senderUUID, EnumExchangePrivilege.ALLOW_EXCHANGE.id(), true)
+                    && PrivilegesProviderServer.getAsBoolean(targetUUID, EnumExchangePrivilege.ALLOW_EXCHANGE.id(), true)
                     && !senderUUID.equals(targetUUID)) {
                 OxygenHelperServer.sendRequest(senderMP, target, new ExchangeRequest(ExchangeMain.EXCHANGE_REQUEST_ID, senderUUID, CommonReference.getName(senderMP)));
             } else
@@ -84,21 +85,24 @@ public class ExchangeProcessesManagerServer {
                 this.exchangeProcesses.put(id, new ExchangeProcess(sender, firstIndex, (EntityPlayerMP) target, secondIndex));
                 this.access.put(firstIndex, id);
                 this.access.put(secondIndex, id);
-                openExchangeMenu(target);
+                openExchangeMenu((EntityPlayerMP) target);
                 openExchangeMenu(sender);
             }
         }
     }
 
-    public void processExchangeOperation(EntityPlayer player, EnumExchangeOperation operation, long offeredCurrency) {
-        UUID playerUUID = CommonReference.getPersistentUUID(player);
+    public void processExchangeOperation(EntityPlayerMP playerMP, EnumExchangeOperation operation, long offeredCurrency) {
+        UUID playerUUID = CommonReference.getPersistentUUID(playerMP);
         int index = OxygenHelperServer.getPlayerIndex(playerUUID);
+        if (offeredCurrency != 0L) {
+            if (offeredCurrency < 0L || !CurrencyHelperServer.enoughCurrency(playerUUID, offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX))
+                operation = EnumExchangeOperation.CLOSE;
+        }
         if (this.haveExchangeProcess(index))
-            this.getExchangeProcess(index).processAction(index, operation, 
-                    offeredCurrency > 0L ? MathUtils.clamp(offeredCurrency, 0L, CurrencyHelperServer.getCurrency(playerUUID)) : 0L);
+            this.getExchangeProcess(index).processAction(index, operation, offeredCurrency);
     }
 
-    public static void openExchangeMenu(EntityPlayer player) {
-        player.openGui(ExchangeMain.instance, ExchangeGUIHandler.EXCHANGE_MENU, player.world, (int) player.posX, (int) player.posY, (int) player.posZ);                            
+    public static void openExchangeMenu(EntityPlayerMP playerMP) {
+        playerMP.openGui(ExchangeMain.instance, ExchangeGUIHandler.EXCHANGE_MENU, playerMP.world, (int) playerMP.posX, (int) playerMP.posY, (int) playerMP.posZ);                            
     }
 }

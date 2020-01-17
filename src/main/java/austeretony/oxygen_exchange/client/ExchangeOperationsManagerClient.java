@@ -15,8 +15,10 @@ public class ExchangeOperationsManagerClient {
 
     public void sendExchangeRequestSynced(UUID playerUUID) {
         PlayerSharedData sharedData = OxygenHelperClient.getPlayerSharedData(playerUUID);
-        this.username = sharedData.getUsername();
-        OxygenMain.network().sendToServer(new SPSendExchangeRequest(sharedData.getIndex()));
+        if (sharedData != null) {
+            this.username = sharedData.getUsername();
+            OxygenMain.network().sendToServer(new SPSendExchangeRequest(sharedData.getIndex()));
+        }
     }
 
     public String getRequestedUsername() {

@@ -6,29 +6,46 @@ import austeretony.alternateui.container.core.AbstractGUIContainer;
 import austeretony.alternateui.screen.core.AbstractGUISection;
 import austeretony.alternateui.screen.core.GUIBaseElement;
 import austeretony.alternateui.screen.core.GUIWorkspace;
+import austeretony.alternateui.util.EnumGUIAlignment;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
-import austeretony.oxygen_exchange.common.inventory.ExchangeMenuContainer;
+import austeretony.oxygen_exchange.client.settings.gui.EnumExchangeGUISetting;
+import austeretony.oxygen_exchange.common.inventory.ContainerExchangeMenu;
 import net.minecraft.item.ItemStack;
 
-public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
+public class ExchangeMenuContainer extends AbstractGUIContainer {
 
-    private ExchangeGUISection exchangeSection;
+    private ExchangeSection exchangeSection;
 
-    protected final ExchangeMenuContainer container;
+    protected final ContainerExchangeMenu container;
 
-    public ExchangeMenuGUIContainer(ExchangeMenuContainer container) {
+    public ExchangeMenuContainer(ContainerExchangeMenu container) {
         super(container);
         this.container = container;
     }
 
     @Override
     protected GUIWorkspace initWorkspace() {
-        return new GUIWorkspace(this, 172, 190);
+        EnumGUIAlignment alignment = EnumGUIAlignment.CENTER;
+        switch (EnumExchangeGUISetting.EXCHANGE_MENU_ALIGNMENT.get().asInt()) {
+        case - 1: 
+            alignment = EnumGUIAlignment.LEFT;
+            break;
+        case 0:
+            alignment = EnumGUIAlignment.CENTER;
+            break;
+        case 1:
+            alignment = EnumGUIAlignment.RIGHT;
+            break;    
+        default:
+            alignment = EnumGUIAlignment.CENTER;
+            break;
+        }
+        return new GUIWorkspace(this, 172, 210).setAlignment(alignment, 0, 0);
     }
 
     @Override
     protected void initSections() {
-        this.getWorkspace().initSection(this.exchangeSection = new ExchangeGUISection(this));        
+        this.getWorkspace().initSection(this.exchangeSection = new ExchangeSection(this));        
     }
 
     @Override
@@ -51,12 +68,12 @@ public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
         super.keyTyped(typedChar, keyCode);
     }
 
-    public ExchangeGUISection getMainSection() {
+    public ExchangeSection getMainSection() {
         return this.exchangeSection;
     }
 
     public void madeOffer() {
-        this.container.disableClientOfferSlots();
+        this.container.disableOfferSlots();
 
         this.exchangeSection.madeOffer();
     }
@@ -64,7 +81,7 @@ public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
     public void canceledExchange() {
         for (int i = 0; i < 5; i++)
             this.container.inventorySlots.get(i).putStack(ItemStack.EMPTY);
-        this.container.enableClientOfferSlots();     
+        this.container.enableOfferSlots();     
 
         this.exchangeSection.canceledExchange();
     }
@@ -83,7 +100,7 @@ public class ExchangeMenuGUIContainer extends AbstractGUIContainer {
     public void otherPlayerCanceledExchange() {       
         for (int i = 0; i < 5; i++)
             this.container.inventorySlots.get(i).putStack(ItemStack.EMPTY);
-        this.container.enableClientOfferSlots();
+        this.container.enableOfferSlots();
 
         this.exchangeSection.otherPlayerCanceledExchange();   
     }

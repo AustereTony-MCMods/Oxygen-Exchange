@@ -3,7 +3,6 @@ package austeretony.oxygen_exchange.common.network.server;
 import austeretony.oxygen_core.common.api.CommonReference;
 import austeretony.oxygen_core.common.network.Packet;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
-import austeretony.oxygen_core.server.api.RequestsFilterHelper;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
 import austeretony.oxygen_exchange.server.ExchangeManagerServer;
@@ -33,7 +32,7 @@ public class SPExchangeMenuOperation extends Packet {
     @Override
     public void read(ByteBuf buffer, INetHandler netHandler) {
         final EntityPlayerMP playerMP = getEntityPlayerMP(netHandler);
-        if (RequestsFilterHelper.getLock(CommonReference.getPersistentUUID(playerMP), ExchangeMain.EXCHANGE_OPERATION_REQUEST_ID)) {
+        if (OxygenHelperServer.isNetworkRequestAvailable(CommonReference.getPersistentUUID(playerMP), ExchangeMain.EXCHANGE_OPERATION_REQUEST_ID)) {
             final int ordinal = buffer.readByte();
             final long offeredCurrency = buffer.readLong();
             if (ordinal >= 0 && ordinal < EnumExchangeOperation.values().length)
