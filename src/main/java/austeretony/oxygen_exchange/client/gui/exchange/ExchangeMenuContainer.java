@@ -40,7 +40,7 @@ public class ExchangeMenuContainer extends AbstractGUIContainer {
             alignment = EnumGUIAlignment.CENTER;
             break;
         }
-        return new GUIWorkspace(this, 172, 210).setAlignment(alignment, 0, 0);
+        return new GUIWorkspace(this, 174, 197).setAlignment(alignment, 0, 0);
     }
 
     @Override

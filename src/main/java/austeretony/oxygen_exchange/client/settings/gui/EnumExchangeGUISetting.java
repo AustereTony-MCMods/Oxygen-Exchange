@@ -9,7 +9,7 @@ public enum EnumExchangeGUISetting {
 
     //Color
 
-    SLOT_BOTTOM_LAYER_COLOR("color_slot_bottom_layer", EnumValueType.HEX, Integer.toHexString(0xdc252525)),
+    SLOT_BOTTOM_LAYER_COLOR("color_slot_bottom", EnumValueType.HEX, Integer.toHexString(0x64101010)),
     SLOT_HIGHLIGHTING_COLOR("color_slot_highlighting", EnumValueType.HEX, Integer.toHexString(0x45ffffff)),
 
     //Alignment
@@ -35,7 +35,7 @@ public enum EnumExchangeGUISetting {
     }
 
     public static void register() {
-        for (EnumExchangeGUISetting setting : EnumExchangeGUISetting.values())
+        for (EnumExchangeGUISetting setting : values())
             OxygenManagerClient.instance().getClientSettingManager().register(SettingValueUtils.getValue(setting.type, setting.key, setting.baseValue));
     }
 }

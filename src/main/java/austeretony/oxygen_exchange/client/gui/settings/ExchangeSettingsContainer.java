@@ -5,7 +5,7 @@ import austeretony.oxygen_core.client.OxygenManagerClient;
 import austeretony.oxygen_core.client.api.ClientReference;
 import austeretony.oxygen_core.client.api.EnumBaseGUISetting;
 import austeretony.oxygen_core.client.gui.elements.OxygenDropDownList;
-import austeretony.oxygen_core.client.gui.elements.OxygenDropDownList.OxygenDropDownListEntry;
+import austeretony.oxygen_core.client.gui.elements.OxygenDropDownList.OxygenDropDownListWrapperEntry;
 import austeretony.oxygen_core.client.gui.elements.OxygenTextLabel;
 import austeretony.oxygen_core.client.gui.settings.ElementsContainer;
 import austeretony.oxygen_core.client.gui.settings.gui.ColorButton;
@@ -84,12 +84,12 @@ public class ExchangeSettingsContainer implements ElementsContainer {
             break;
         }
         framework.addElement(this.alignmentExchangeMenu = new OxygenDropDownList(68, 35, 55, currAlignmentStr));
-        this.alignmentExchangeMenu.addElement(new OxygenDropDownListEntry<Integer>(- 1, ClientReference.localize("oxygen_core.alignment.left")));
-        this.alignmentExchangeMenu.addElement(new OxygenDropDownListEntry<Integer>(0, ClientReference.localize("oxygen_core.alignment.center")));
-        this.alignmentExchangeMenu.addElement(new OxygenDropDownListEntry<Integer>(1, ClientReference.localize("oxygen_core.alignment.right")));
+        this.alignmentExchangeMenu.addElement(new OxygenDropDownListWrapperEntry<Integer>(- 1, ClientReference.localize("oxygen_core.alignment.left")));
+        this.alignmentExchangeMenu.addElement(new OxygenDropDownListWrapperEntry<Integer>(0, ClientReference.localize("oxygen_core.alignment.center")));
+        this.alignmentExchangeMenu.addElement(new OxygenDropDownListWrapperEntry<Integer>(1, ClientReference.localize("oxygen_core.alignment.right")));
 
-        this.alignmentExchangeMenu.<OxygenDropDownListEntry<Integer>>setClickListener((element)->{
-            EnumExchangeGUISetting.EXCHANGE_MENU_ALIGNMENT.get().setValue(String.valueOf(element.index));
+        this.alignmentExchangeMenu.<OxygenDropDownListWrapperEntry<Integer>>setElementClickListener((element)->{
+            EnumExchangeGUISetting.EXCHANGE_MENU_ALIGNMENT.get().setValue(String.valueOf(element.getWrapped()));
             OxygenManagerClient.instance().getClientSettingManager().changed();
         });
 
@@ -111,8 +111,8 @@ public class ExchangeSettingsContainer implements ElementsContainer {
 
         EnumExchangeGUISetting.SLOT_HIGHLIGHTING_COLOR.get().reset();
         this.slotHighlightingColor.setButtonColor(EnumExchangeGUISetting.SLOT_HIGHLIGHTING_COLOR.get().asInt());
-		
-		OxygenManagerClient.instance().getClientSettingManager().changed();
+
+        OxygenManagerClient.instance().getClientSettingManager().changed();
     }
 
     @Override

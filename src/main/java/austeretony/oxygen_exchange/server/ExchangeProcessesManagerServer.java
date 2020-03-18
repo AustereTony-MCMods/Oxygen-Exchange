@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 import austeretony.oxygen_core.common.api.CommonReference;
 import austeretony.oxygen_core.common.main.EnumOxygenStatusMessage;
 import austeretony.oxygen_core.common.main.OxygenMain;
@@ -12,6 +14,7 @@ import austeretony.oxygen_core.server.api.CurrencyHelperServer;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
 import austeretony.oxygen_core.server.api.PrivilegesProviderServer;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
+import austeretony.oxygen_exchange.common.config.ExchangeConfig;
 import austeretony.oxygen_exchange.common.main.EnumExchangePrivilege;
 import austeretony.oxygen_exchange.common.main.ExchangeGUIHandler;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
@@ -24,12 +27,10 @@ public class ExchangeProcessesManagerServer {
 
     private final Map<Integer, Long> access = new ConcurrentHashMap<>();
 
-    public boolean haveExchangeProcess(int index) {
-        return this.access.containsKey(index);   
-    }
-
-    public ExchangeProcess getExchangeProcess(int index) {
-        return this.exchangeProcesses.get(this.access.get(index));
+    @Nullable
+    public ExchangeProcess getExchangeProcess(int playerIndex) {
+        Long processId = this.access.get(playerIndex);
+        return processId != null ? this.exchangeProcesses.get(processId) : null;
     }
 
     public void onPlayerUnloaded(EntityPlayerMP playerMP) {
@@ -63,11 +64,17 @@ public class ExchangeProcessesManagerServer {
             targetUUID = OxygenHelperServer.getPlayerSharedData(playerIndex).getPlayerUUID();
             EntityPlayerMP target = CommonReference.playerByUUID(targetUUID);
             if (CommonReference.isEntitiesNear(senderMP, target, 5.0D)
-                    && !this.haveExchangeProcess(playerIndex)
-                    && PrivilegesProviderServer.getAsBoolean(senderUUID, EnumExchangePrivilege.ALLOW_EXCHANGE.id(), true)
-                    && PrivilegesProviderServer.getAsBoolean(targetUUID, EnumExchangePrivilege.ALLOW_EXCHANGE.id(), true)
+                    && this.getExchangeProcess(playerIndex) == null
+                    && PrivilegesProviderServer.getAsBoolean(senderUUID, EnumExchangePrivilege.ALLOW_EXCHANGE.id(), ExchangeConfig.ALLOW_EXCHANGE.asBoolean())
                     && !senderUUID.equals(targetUUID)) {
-                OxygenHelperServer.sendRequest(senderMP, target, new ExchangeRequest(ExchangeMain.EXCHANGE_REQUEST_ID, senderUUID, CommonReference.getName(senderMP)));
+                OxygenHelperServer.sendRequest(senderMP, target, new ExchangeRequest(senderUUID, CommonReference.getName(senderMP)));
+
+                if (ExchangeConfig.ADVANCED_LOGGING.asBoolean())
+                    OxygenMain.LOGGER.info("Player {}/{} offered exchange to player {}/{}.",
+                            CommonReference.getName(senderMP),
+                            senderUUID,
+                            CommonReference.getName(target),
+                            targetUUID);
             } else
                 OxygenHelperServer.sendStatusMessage(senderMP, OxygenMain.OXYGEN_CORE_MOD_INDEX, EnumOxygenStatusMessage.REQUEST_RESET.ordinal());
         }
@@ -87,6 +94,13 @@ public class ExchangeProcessesManagerServer {
                 this.access.put(secondIndex, id);
                 openExchangeMenu((EntityPlayerMP) target);
                 openExchangeMenu(sender);
+
+                if (ExchangeConfig.ADVANCED_LOGGING.asBoolean())
+                    OxygenMain.LOGGER.info("Player {}/{} accepted exchange request of player {}/{}.",
+                            CommonReference.getName(target),
+                            targetUUID,
+                            CommonReference.getName(sender),
+                            senderUUID);
             }
         }
     }
@@ -98,7 +112,8 @@ public class ExchangeProcessesManagerServer {
             if (offeredCurrency < 0L || !CurrencyHelperServer.enoughCurrency(playerUUID, offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX))
                 operation = EnumExchangeOperation.CLOSE;
         }
-        if (this.haveExchangeProcess(index))
+        ExchangeProcess process = this.getExchangeProcess(index);
+        if (process != null)
             this.getExchangeProcess(index).processAction(index, operation, offeredCurrency);
     }
 

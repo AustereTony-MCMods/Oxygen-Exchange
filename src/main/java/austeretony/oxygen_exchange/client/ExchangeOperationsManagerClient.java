@@ -1,9 +1,5 @@
 package austeretony.oxygen_exchange.client;
 
-import java.util.UUID;
-
-import austeretony.oxygen_core.client.api.OxygenHelperClient;
-import austeretony.oxygen_core.common.PlayerSharedData;
 import austeretony.oxygen_core.common.main.OxygenMain;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
 import austeretony.oxygen_exchange.common.network.server.SPExchangeMenuOperation;
@@ -13,12 +9,8 @@ public class ExchangeOperationsManagerClient {
 
     private String username = "Undefined";
 
-    public void sendExchangeRequestSynced(UUID playerUUID) {
-        PlayerSharedData sharedData = OxygenHelperClient.getPlayerSharedData(playerUUID);
-        if (sharedData != null) {
-            this.username = sharedData.getUsername();
-            OxygenMain.network().sendToServer(new SPSendExchangeRequest(sharedData.getIndex()));
-        }
+    public void sendExchangeRequestSynced(int playerIndex) {
+        OxygenMain.network().sendToServer(new SPSendExchangeRequest(playerIndex));
     }
 
     public String getRequestedUsername() {

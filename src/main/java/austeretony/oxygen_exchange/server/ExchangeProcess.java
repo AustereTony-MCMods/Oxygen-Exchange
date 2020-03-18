@@ -12,6 +12,7 @@ import austeretony.oxygen_core.server.api.CurrencyHelperServer;
 import austeretony.oxygen_core.server.api.OxygenHelperServer;
 import austeretony.oxygen_core.server.api.SoundEventHelperServer;
 import austeretony.oxygen_exchange.common.EnumExchangeOperation;
+import austeretony.oxygen_exchange.common.config.ExchangeConfig;
 import austeretony.oxygen_exchange.common.inventory.ContainerExchangeMenu;
 import austeretony.oxygen_exchange.common.main.EnumExchangeStatusMessage;
 import austeretony.oxygen_exchange.common.main.ExchangeMain;
@@ -195,8 +196,13 @@ public class ExchangeProcess {
                 CurrencyHelperServer.addCurrency(firstUUID, this.secondParticipant.offeredCurrency, OxygenMain.COMMON_CURRENCY_INDEX);
             }
 
-            SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.SELL.id);
-            SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.SELL.id);
+            SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.RINGING_COINS.getId());
+            SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.RINGING_COINS.getId());
+
+            if (ExchangeConfig.ADVANCED_LOGGING.asBoolean())
+                OxygenMain.LOGGER.info("Exchange completed: participant #1 {}, participant #2 {}.",
+                        this.firstParticipant,
+                        this.secondParticipant);
         }
 
         for (int i = 5; i < 10; i++) {
@@ -211,7 +217,7 @@ public class ExchangeProcess {
             CommonReference.delegateToServerThread(()->this.firstParticipant.player.inventory.addItemStackToInventory(itemStack));
         }
         if (itemsAdded)
-            SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.INVENTORY.id);
+            SoundEventHelperServer.playSoundClient(this.firstParticipant.player, OxygenSoundEffects.INVENTORY_OPERATION.getId());
 
         itemsAdded = false;
         for (ItemStack itemStack : this.firstParticipant.offeredItems) {
@@ -220,7 +226,7 @@ public class ExchangeProcess {
             CommonReference.delegateToServerThread(()->this.secondParticipant.player.inventory.addItemStackToInventory(itemStack));
         }
         if (itemsAdded)
-            SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.INVENTORY.id);
+            SoundEventHelperServer.playSoundClient(this.secondParticipant.player, OxygenSoundEffects.INVENTORY_OPERATION.getId());
 
         this.firstParticipant.player.openContainer.detectAndSendChanges();
         this.secondParticipant.player.openContainer.detectAndSendChanges();
@@ -264,6 +270,21 @@ public class ExchangeProcess {
             this.offeredCurrency = 0L;
             for (int i = 0; i < 5; i++)
                 this.offeredItems[i] = ItemStack.EMPTY;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < 5; i++) {
+                builder.append(this.offeredItems[i].getDisplayName());
+                if (i != 4)
+                    builder.append(", ");
+            }
+            return String.format("[%s/%s, currency value: %s, items: %s]",
+                    CommonReference.getName(this.player),
+                    CommonReference.getPersistentUUID(this.player),
+                    this.offeredCurrency,
+                    builder.toString());
         }
     }
 }

@@ -10,15 +10,16 @@ import austeretony.alternateui.util.EnumGUISlotsPosition;
 import austeretony.oxygen_core.client.api.ClientReference;
 import austeretony.oxygen_core.client.api.EnumBaseGUISetting;
 import austeretony.oxygen_core.client.api.WatcherHelperClient;
-import austeretony.oxygen_core.client.gui.elements.OxygenButton;
 import austeretony.oxygen_core.client.gui.elements.OxygenCurrencyValue;
 import austeretony.oxygen_core.client.gui.elements.OxygenInventoryLoad;
+import austeretony.oxygen_core.client.gui.elements.OxygenKeyButton;
 import austeretony.oxygen_core.client.gui.elements.OxygenNumberField;
 import austeretony.oxygen_core.client.gui.elements.OxygenTextLabel;
 import austeretony.oxygen_core.common.main.OxygenMain;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
 import austeretony.oxygen_exchange.client.gui.exchange.callback.ConfirmExchangeCallback;
 import austeretony.oxygen_exchange.client.settings.gui.EnumExchangeGUISetting;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.item.ItemStack;
 
 public class ExchangeSection extends AbstractGUISection {
@@ -31,13 +32,17 @@ public class ExchangeSection extends AbstractGUISection {
 
     private OxygenTextLabel clientConfirmedTextLabel, otherConfirmedTextLabel;
 
-    private OxygenButton offerButton, cancelButton, confirmButton;
+    private OxygenKeyButton offerButton, cancelButton, confirmButton;
 
     private OxygenCurrencyValue balanceValue, otherPlayerOfferedCurrencyValue;
 
     private OxygenInventoryLoad inventoryLoad;
 
     private AbstractGUICallback confirmExchangeCallback;
+
+    //cache
+
+    private boolean initialized;
 
     public final String 
     exchangeConfirmed = ClientReference.localize("oxygen_exchange.gui.exchange.confirmed"),
@@ -50,7 +55,9 @@ public class ExchangeSection extends AbstractGUISection {
 
     @Override
     public void init() {
-        this.addElement(new ExchangeMenuBackgroundFiller(0, 0, this.getWidth(), this.getHeight()));
+        this.confirmExchangeCallback = new ConfirmExchangeCallback(this.screen, this, 140, 36).enableDefaultBackground();
+
+        this.addElement(new BackgroundFiller(0, 0, this.getWidth(), this.getHeight()));
         this.addElement(new OxygenTextLabel(4, 12, ClientReference.localize("oxygen_exchange.gui.exchange.title"), EnumBaseGUISetting.TEXT_TITLE_SCALE.get().asFloat(), EnumBaseGUISetting.TEXT_ENABLED_COLOR.get().asInt()));
 
         this.addElement(new OxygenTextLabel(6, 23, ClientReference.localize("oxygen_exchange.gui.exchange.playerOffer", ExchangeManagerClient.instance().getExchangeOperationsManager().getRequestedUsername()), 
@@ -60,7 +67,7 @@ public class ExchangeSection extends AbstractGUISection {
         long balance = WatcherHelperClient.getLong(OxygenMain.COMMON_CURRENCY_INDEX);
         this.addElement(this.currencyField = new OxygenNumberField(6, 96, 40, "0", balance, false, 0, true));
 
-        this.addElement(this.otherPlayerOfferedCurrencyValue = new OxygenCurrencyValue(11, 50));   
+        this.addElement(this.otherPlayerOfferedCurrencyValue = new OxygenCurrencyValue(11, 51));   
         this.otherPlayerOfferedCurrencyValue.setValue(OxygenMain.COMMON_CURRENCY_INDEX, 0L);
 
         this.addElement(this.inventoryLoad = new OxygenInventoryLoad(6, this.getHeight() - 8));
@@ -71,33 +78,33 @@ public class ExchangeSection extends AbstractGUISection {
         this.addElement(this.otherConfirmedTextLabel = new OxygenTextLabel(6, 30, this.exchangeNotConfirmed, EnumBaseGUISetting.TEXT_SUB_SCALE.get().asFloat() - 0.05F, EnumBaseGUISetting.INACTIVE_TEXT_COLOR.get().asInt()));
         this.addElement(this.clientConfirmedTextLabel = new OxygenTextLabel(6, 74, this.exchangeNotConfirmed, EnumBaseGUISetting.TEXT_SUB_SCALE.get().asFloat() - 0.05F, EnumBaseGUISetting.INACTIVE_TEXT_COLOR.get().asInt()));
 
-        this.addElement(this.offerButton = new OxygenButton(6, 108, 40, 10, ClientReference.localize("oxygen_core.gui.offer")));
-        this.offerButton.setKeyPressListener(Keyboard.KEY_F, ()->this.makeOffer());
-
-        this.addElement(this.cancelButton = new OxygenButton(50, 108, 40, 10, ClientReference.localize("oxygen_core.gui.cancel")).disable());  
-        this.cancelButton.setKeyPressListener(Keyboard.KEY_X, ()->this.cancelOffer());
-
-        this.addElement(this.confirmButton = new OxygenButton(100, 108, 40, 10, ClientReference.localize("oxygen_core.gui.confirm")).disable());   
-        this.confirmButton.setKeyPressListener(Keyboard.KEY_R, ()->this.confirmOffer());
+        this.addElement(this.offerButton = new OxygenKeyButton(0, this.getY() + this.getHeight() + this.screen.guiTop - 8, ClientReference.localize("oxygen_exchange.gui.exchange.button.makeOffer"), Keyboard.KEY_E, this::makeOffer));
+        this.addElement(this.cancelButton = new OxygenKeyButton(0, this.getY() + this.getHeight() + this.screen.guiTop - 8, ClientReference.localize("oxygen_exchange.gui.exchange.cancelOffer"), Keyboard.KEY_X, this::cancelOffer).disable());  
+        this.addElement(this.confirmButton = new OxygenKeyButton(0, this.getY() + this.getHeight() + this.screen.guiTop - 8, ClientReference.localize("oxygen_exchange.gui.exchange.confirmExchange"), Keyboard.KEY_R, this::confirmOffer).disable());   
 
         int 
         slotBottomColor = EnumExchangeGUISetting.SLOT_BOTTOM_LAYER_COLOR.get().asInt(),
         slotHighlightingColor = EnumExchangeGUISetting.SLOT_HIGHLIGHTING_COLOR.get().asInt();
-        this.addSlotsFramework(this.clientOfferSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 5, 10, 1, 5).setPosition(6, 76)
+        this.addSlotsFramework(this.clientOfferSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 5, 10, 1, 5).setPosition(7, 76)
                 .enableSlotBottomLayer().setSlotBottomLayerColor(slotBottomColor).setSlotHighlightingColor(slotHighlightingColor));
-        this.addSlotsFramework(this.otherOfferSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 0, 5, 1, 5).setPosition(6, 32)
+        this.addSlotsFramework(this.otherOfferSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 0, 5, 1, 5).setPosition(7, 32)
                 .enableSlotBottomLayer().setSlotBottomLayerColor(slotBottomColor).setSlotHighlightingColor(slotHighlightingColor));
-        this.addSlotsFramework(this.inventorySlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 10, 37, 3, 9).setPosition(6, 122)
+        this.addSlotsFramework(this.inventorySlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 10, 37, 3, 9).setPosition(7, 108)
                 .enableSlotBottomLayer().setSlotBottomLayerColor(slotBottomColor).setSlotHighlightingColor(slotHighlightingColor));
-        this.addSlotsFramework(this.hotbarSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 37, 46, 1, 9).setPosition(6, 180)
-                .enableSlotBottomLayer().setSlotBottomLayerColor(slotBottomColor).setSlotHighlightingColor(slotHighlightingColor));
+        this.addSlotsFramework(this.hotbarSlots = new GUISlotsFramework(EnumGUISlotsPosition.CUSTOM, this.screen.container, 37, 46, 1, 9).setPosition(7, 166)
+                .enableSlotBottomLayer().setSlotBottomLayerColor(slotBottomColor).setSlotHighlightingColor(slotHighlightingColor));        
         this.clientOfferSlots.updateFramework();
         this.otherOfferSlots.updateFramework(); 
         this.inventorySlots.updateFramework();
         this.hotbarSlots.updateFramework();
         this.otherOfferSlots.disable();
+    }
 
-        this.confirmExchangeCallback = new ConfirmExchangeCallback(this.screen, this, 140, 40).enableDefaultBackground();
+    private void calculateButtonsHorizontalPosition() {
+        ScaledResolution sr = new ScaledResolution(this.mc);
+        this.offerButton.setX((sr.getScaledWidth() - (12 + this.textWidth(this.offerButton.getDisplayText(), this.offerButton.getTextScale()))) / 2 - this.screen.guiLeft);
+        this.cancelButton.setX(sr.getScaledWidth() / 2 - 50 - (12 + this.textWidth(this.cancelButton.getDisplayText(), this.cancelButton.getTextScale())) - this.screen.guiLeft);
+        this.confirmButton.setX(sr.getScaledWidth() / 2 + 50 - this.screen.guiLeft);
     }
 
     private void makeOffer() {
@@ -121,6 +128,14 @@ public class ExchangeSection extends AbstractGUISection {
                 this.cancelOffer();
             else if (element == this.confirmButton)
                 this.confirmOffer();
+        }
+    }
+
+    @Override
+    public void update() {
+        if (!this.initialized) {
+            this.initialized = true;
+            this.calculateButtonsHorizontalPosition();
         }
     }
 

@@ -14,14 +14,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 public class ExchangeRequest extends AbstractNotification {
 
-    public final int index;
-
     public final UUID senderUUID;
 
     public final String senderUsername;
 
-    public ExchangeRequest(int index, UUID senderUUID, String senderUsername) {
-        this.index = index;
+    public ExchangeRequest(UUID senderUUID, String senderUsername) {
         this.senderUUID = senderUUID;
         this.senderUsername = senderUsername;
     }
@@ -43,7 +40,7 @@ public class ExchangeRequest extends AbstractNotification {
 
     @Override
     public int getIndex() {
-        return this.index;
+        return ExchangeMain.EXCHANGE_REQUEST_ID;
     }
 
     @Override

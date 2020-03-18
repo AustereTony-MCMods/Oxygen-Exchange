@@ -8,6 +8,6 @@ public class ExchangeEventsServer {
 
     @SubscribeEvent
     public void onPlayerUnloaded(OxygenPlayerUnloadedEvent event) {
-        ExchangeManagerServer.instance().onPlayerUnloaded(event.playerMP);
+        ExchangeManagerServer.instance().playerUnloaded(event.playerMP);
     }
 }

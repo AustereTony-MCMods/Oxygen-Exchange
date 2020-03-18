@@ -2,7 +2,7 @@ package austeretony.oxygen_exchange.server;
 
 import java.util.concurrent.TimeUnit;
 
-import austeretony.oxygen_core.server.OxygenManagerServer;
+import austeretony.oxygen_core.server.api.OxygenHelperServer;
 import austeretony.oxygen_core.server.item.ItemsBlackList;
 import net.minecraft.entity.player.EntityPlayerMP;
 
@@ -15,8 +15,7 @@ public class ExchangeManagerServer {
     private final ItemsBlackList itemsBlacklist = ItemsBlackList.create("exchange");
 
     private void scheduleRepeatableProcesses() {
-        OxygenManagerServer.instance().getExecutionManager().getExecutors().getSchedulerExecutorService().scheduleAtFixedRate(
-                ()->this.exchangeProcessesManager.process(), 1L, 1L, TimeUnit.SECONDS);
+        OxygenHelperServer.getSchedulerExecutorService().scheduleAtFixedRate(this.exchangeProcessesManager::process, 1L, 1L, TimeUnit.SECONDS);
     }
 
     public static void create() {
@@ -38,7 +37,7 @@ public class ExchangeManagerServer {
         return this.itemsBlacklist;
     }
 
-    public void onPlayerUnloaded(EntityPlayerMP playerMP) {       
+    public void playerUnloaded(EntityPlayerMP playerMP) {       
         this.exchangeProcessesManager.onPlayerUnloaded(playerMP);
     }
 }

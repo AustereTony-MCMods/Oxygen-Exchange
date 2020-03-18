@@ -16,6 +16,10 @@ oxygen_exchange.gui.exchange.confirmCallback.request=Вы уверены?
 oxygen_exchange.gui.exchange.confirmed=Обмен принят
 oxygen_exchange.gui.exchange.notConfirmed=Обмен не принят
 
+oxygen_exchange.gui.exchange.button.makeOffer=Сделать Предложение
+oxygen_exchange.gui.exchange.cancelOffer=Отменть Предложение
+oxygen_exchange.gui.exchange.confirmExchange=Подтвердить Обмен
+
 oxygen_exchange.status.acceptedSender=Ваше предложение на обмен принято
 oxygen_exchange.status.acceptedTarget=Вы приняли предложение на обмен
 oxygen_exchange.status.rejectedSender=Ваше предложение на обмен отклонено

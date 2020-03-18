@@ -18,6 +18,10 @@ oxygen_exchange.gui.exchange.confirmCallback.request=Are you sure?
 oxygen_exchange.gui.exchange.confirmed=Exchange confirmed
 oxygen_exchange.gui.exchange.notConfirmed=Exchange not confirmed
 
+oxygen_exchange.gui.exchange.button.makeOffer=Make Offer
+oxygen_exchange.gui.exchange.cancelOffer=Cancel Offer
+oxygen_exchange.gui.exchange.confirmExchange=Confirm Exchange
+
 oxygen_exchange.status.acceptedSender=Your exchange request accepted
 oxygen_exchange.status.acceptedTarget=You accepted exchange request
 oxygen_exchange.status.rejectedSender=Your exchange request rejected

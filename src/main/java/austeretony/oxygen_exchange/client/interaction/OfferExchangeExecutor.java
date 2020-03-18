@@ -6,7 +6,9 @@ import austeretony.oxygen_core.client.api.ClientReference;
 import austeretony.oxygen_core.client.api.OxygenHelperClient;
 import austeretony.oxygen_core.client.api.PrivilegesProviderClient;
 import austeretony.oxygen_core.client.interaction.PlayerInteractionMenuEntry;
+import austeretony.oxygen_core.common.PlayerSharedData;
 import austeretony.oxygen_exchange.client.ExchangeManagerClient;
+import austeretony.oxygen_exchange.common.config.ExchangeConfig;
 import austeretony.oxygen_exchange.common.main.EnumExchangePrivilege;
 
 public class OfferExchangeExecutor implements PlayerInteractionMenuEntry {
@@ -18,11 +20,13 @@ public class OfferExchangeExecutor implements PlayerInteractionMenuEntry {
 
     @Override
     public boolean isValid(UUID playerUUID) {
-        return OxygenHelperClient.isPlayerAvailable(playerUUID) && PrivilegesProviderClient.getAsBoolean(EnumExchangePrivilege.ALLOW_EXCHANGE.id(), true);
+        return OxygenHelperClient.isPlayerAvailable(playerUUID) && PrivilegesProviderClient.getAsBoolean(EnumExchangePrivilege.ALLOW_EXCHANGE.id(), ExchangeConfig.ALLOW_EXCHANGE.asBoolean());
     }
 
     @Override
     public void execute(UUID playerUUID) {
-        ExchangeManagerClient.instance().getExchangeOperationsManager().sendExchangeRequestSynced(playerUUID);
+        PlayerSharedData sharedData = OxygenHelperClient.getPlayerSharedData(playerUUID);
+        if (sharedData != null)
+            ExchangeManagerClient.instance().getExchangeOperationsManager().sendExchangeRequestSynced(sharedData.getIndex());
     }
 }

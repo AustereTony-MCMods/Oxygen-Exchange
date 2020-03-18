@@ -28,7 +28,7 @@ public enum EnumExchangePrivilege {
     }
 
     public static void register() {
-        for (EnumExchangePrivilege privilege : EnumExchangePrivilege.values())
+        for (EnumExchangePrivilege privilege : values())
             PrivilegeRegistry.registerPrivilege(privilege.name, privilege.id, privilege.type);
     }
 }

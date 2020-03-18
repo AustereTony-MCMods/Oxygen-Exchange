@@ -1,8 +1,5 @@
 package austeretony.oxygen_exchange.common.main;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import austeretony.oxygen_core.client.api.OxygenHelperClient;
 import austeretony.oxygen_core.client.api.PlayerInteractionMenuHelper;
 import austeretony.oxygen_core.client.command.CommandOxygenClient;
@@ -37,7 +34,7 @@ import net.minecraftforge.fml.relauncher.Side;
         modid = ExchangeMain.MODID, 
         name = ExchangeMain.NAME, 
         version = ExchangeMain.VERSION,
-        dependencies = "required-after:oxygen_core@[0.10.0,);",
+        dependencies = "required-after:oxygen_core@[0.11.0,);",
         certificateFingerprint = "@FINGERPRINT@",
         updateJSON = ExchangeMain.VERSIONS_FORGE_URL)
 public class ExchangeMain {
@@ -45,7 +42,7 @@ public class ExchangeMain {
     public static final String 
     MODID = "oxygen_exchange", 
     NAME = "Oxygen: Exchange", 
-    VERSION = "0.10.0", 
+    VERSION = "0.11.0", 
     VERSION_CUSTOM = VERSION + ":beta:0",
     GAME_VERSION = "1.12.2",
     VERSIONS_FORGE_URL = "https://raw.githubusercontent.com/AustereTony-MCMods/Oxygen-Exchange/info/mod_versions_forge.json";
@@ -58,8 +55,6 @@ public class ExchangeMain {
     EXCHANGE_MENU_SCREEN_ID = 30,
 
     EXCHANGE_OPERATION_REQUEST_ID = 30;
-
-    public static final Logger LOGGER = LogManager.getLogger(NAME);
 
     @Instance(MODID)
     public static ExchangeMain instance; 
@@ -78,6 +73,7 @@ public class ExchangeMain {
         CommonReference.registerEvent(new ExchangeEventsServer());
         NetworkRequestsRegistryServer.registerRequest(EXCHANGE_OPERATION_REQUEST_ID, 1000);
         EnumExchangePrivilege.register();
+        NetworkRegistry.INSTANCE.registerGuiHandler(instance, new ExchangeGUIHandler());
         if (event.getSide() == Side.CLIENT) {  
             ExchangeManagerClient.create();
             CommonReference.registerEvent(new ExchangeEventsClient());
@@ -86,7 +82,6 @@ public class ExchangeMain {
             EnumExchangeGUISetting.register();
             SettingsScreen.registerSettingsContainer(new ExchangeSettingsContainer());
         }
-        NetworkRegistry.INSTANCE.registerGuiHandler(instance, new ExchangeGUIHandler());
     }   
 
     private void initNetwork() {
